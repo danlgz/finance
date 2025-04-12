@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/card';
 import { PlusCircle, Trash2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslate } from '@/hooks/useTranslate';
+import { formatCurrency } from '@/lib/utils';
 
 interface Household {
   id: string;
@@ -59,6 +61,7 @@ interface Budget {
 }
 
 export default function EditBudgetPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useTranslate();
   const resolvedParams = use(params);
   const budgetId = resolvedParams.id;
   
@@ -96,10 +99,10 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
         const budgetData = await response.json();
         
         // Transform the data to match the form structure
-        const transformedCategories = budgetData.categories.map(category => ({
+        const transformedCategories = budgetData.categories.map((category: any) => ({
           id: category.id,
           name: category.name,
-          items: category.items.map(item => ({
+          items: category.items.map((item: any) => ({
             id: item.id,
             name: item.name,
             amount: item.amount,
@@ -266,18 +269,18 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
 
   // Generate months for select
   const months = [
-    { value: '1', label: 'January' },
-    { value: '2', label: 'February' },
-    { value: '3', label: 'March' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'May' },
-    { value: '6', label: 'June' },
-    { value: '7', label: 'July' },
-    { value: '8', label: 'August' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'October' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'December' },
+    { value: '1', label: t('budgets:month_1') },
+    { value: '2', label: t('budgets:month_2') },
+    { value: '3', label: t('budgets:month_3') },
+    { value: '4', label: t('budgets:month_4') },
+    { value: '5', label: t('budgets:month_5') },
+    { value: '6', label: t('budgets:month_6') },
+    { value: '7', label: t('budgets:month_7') },
+    { value: '8', label: t('budgets:month_8') },
+    { value: '9', label: t('budgets:month_9') },
+    { value: '10', label: t('budgets:month_10') },
+    { value: '11', label: t('budgets:month_11') },
+    { value: '12', label: t('budgets:month_12') },
   ];
 
   // Generate years for select (current year - 1 to current year + 5)
@@ -292,36 +295,36 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
     try {
       // Validate the form
       if (!formData.name.trim()) {
-        throw new Error('Budget name is required');
+        throw new Error(t('budgets:errors.nameRequired'));
       }
       
       if (!formData.householdId) {
-        throw new Error('Please select a household');
+        throw new Error(t('budgets:errors.selectHousehold'));
       }
       
       // Check if there are categories and each has a name
       if (formData.categories.length === 0) {
-        throw new Error('Please add at least one category');
+        throw new Error(t('budgets:errors.addCategory'));
       }
       
       for (const category of formData.categories) {
         if (!category.name.trim()) {
-          throw new Error('All categories must have a name');
+          throw new Error(t('budgets:errors.categoryNameRequired'));
         }
         
         // Each category should have at least one item
         if (category.items.length === 0) {
-          throw new Error(`Category "${category.name}" must have at least one item`);
+          throw new Error(t('budgets:errors.categoryNeedsItems', { category: category.name }));
         }
         
         // Each item should have a name and a valid amount
         for (const item of category.items) {
           if (!item.name.trim()) {
-            throw new Error(`All items in category "${category.name}" must have a name`);
+            throw new Error(t('budgets:errors.itemNameRequired', { category: category.name }));
           }
           
           if (isNaN(item.amount) || item.amount <= 0) {
-            throw new Error(`Item "${item.name}" in category "${category.name}" must have a valid amount greater than zero`);
+            throw new Error(t('budgets:errors.itemAmountInvalid', { item: item.name, category: category.name }));
           }
         }
       }
@@ -337,14 +340,14 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to update budget');
+        throw new Error(errorData.message || t('budgets:errors.updateFailed'));
       }
       
-      toast.success('Budget updated successfully');
+      toast.success(t('budgets:updateSuccess'));
       router.push(`/budgets/${budgetId}`);
     } catch (error) {
       console.error('Error updating budget:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update budget');
+      toast.error(error instanceof Error ? error.message : t('budgets:errors.genericError'));
     } finally {
       setIsSaving(false);
     }
@@ -353,7 +356,7 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <p className="text-xl">Loading...</p>
+        <p className="text-xl">{t('common:loading')}</p>
       </div>
     );
   }
@@ -363,13 +366,13 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
       <div className="rounded-md bg-red-50 p-4">
         <div className="flex">
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
+            <h3 className="text-sm font-medium text-red-800">{t('common:error')}</h3>
             <div className="mt-2 text-sm text-red-700">
               <p>{error}</p>
             </div>
             <div className="mt-4">
               <Button variant="secondary" onClick={() => router.push('/budgets')}>
-                Back
+                {t('common:back')}
               </Button>
             </div>
           </div>
@@ -381,40 +384,40 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Edit Budget</h1>
+        <h1 className="text-3xl font-bold">{t('budgets:editBudget')}</h1>
         <Button variant="outline" onClick={() => router.push(`/budgets/${budgetId}`)}>
-          Cancel
+          {t('common:cancel')}
         </Button>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Budget Information</CardTitle>
-            <CardDescription>Basic information about your budget</CardDescription>
+            <CardTitle>{t('budgets:budgetInformation')}</CardTitle>
+            <CardDescription>{t('budgets:basicInfoDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Budget Name</Label>
+                <Label htmlFor="name">{t('budgets:budgetName')}</Label>
                 <Input
                   id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="e.g., Monthly Budget"
+                  placeholder={t('budgets:budgetNamePlaceholder')}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="household">Household</Label>
+                <Label htmlFor="household">{t('common:household')}</Label>
                 <Select 
                   value={formData.householdId} 
                   onValueChange={(value) => handleSelectChange('householdId', value)}
                 >
                   <SelectTrigger id="household">
-                    <SelectValue placeholder="Select a household" />
+                    <SelectValue placeholder={t('budgets:selectHousehold')} />
                   </SelectTrigger>
                   <SelectContent>
                     {households.map((household) => (
@@ -427,13 +430,13 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="month">Month</Label>
+                <Label htmlFor="month">{t('common:month')}</Label>
                 <Select 
                   value={formData.month.toString()} 
                   onValueChange={(value) => handleSelectChange('month', value)}
                 >
                   <SelectTrigger id="month">
-                    <SelectValue placeholder="Select month" />
+                    <SelectValue placeholder={t('budgets:selectMonth')} />
                   </SelectTrigger>
                   <SelectContent>
                     {months.map((month) => (
@@ -446,13 +449,13 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="year">Year</Label>
+                <Label htmlFor="year">{t('common:year')}</Label>
                 <Select 
                   value={formData.year.toString()} 
                   onValueChange={(value) => handleSelectChange('year', value)}
                 >
                   <SelectTrigger id="year">
-                    <SelectValue placeholder="Select year" />
+                    <SelectValue placeholder={t('budgets:selectYear')} />
                   </SelectTrigger>
                   <SelectContent>
                     {years.map((year) => (
@@ -465,18 +468,18 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
+                <Label htmlFor="currency">{t('common:currency')}</Label>
                 <Select 
                   value={formData.currency} 
                   onValueChange={(value) => handleSelectChange('currency', value)}
                 >
                   <SelectTrigger id="currency">
-                    <SelectValue placeholder="Select currency" />
+                    <SelectValue placeholder={t('budgets:selectCurrency')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="GTQ">Guatemalan Quetzal (GTQ)</SelectItem>
-                    <SelectItem value="USD">US Dollar (USD)</SelectItem>
-                    <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                    <SelectItem value="GTQ">{t('currencies:gtq')}</SelectItem>
+                    <SelectItem value="USD">{t('currencies:usd')}</SelectItem>
+                    <SelectItem value="EUR">{t('currencies:eur')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -487,18 +490,18 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
-              <CardTitle>Budget Categories</CardTitle>
-              <CardDescription>Define your budget categories and items</CardDescription>
+              <CardTitle>{t('budgets:categories')}</CardTitle>
+              <CardDescription>{t('budgets:categoriesDesc')}</CardDescription>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={addCategory}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add Category
+              {t('budgets:addCategory')}
             </Button>
           </CardHeader>
           <CardContent>
             {formData.categories.length === 0 ? (
               <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
-                <p className="text-gray-500">No categories yet. Add a category to get started</p>
+                <p className="text-gray-500">{t('budgets:noCategoriesYet')}</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -507,7 +510,7 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div className="w-full mr-4">
                         <Input
-                          placeholder="Category Name"
+                          placeholder={t('budgets:categoryName')}
                           value={category.name}
                           onChange={(e) => updateCategoryName(category.id, category.tempId, e.target.value)}
                           className="font-semibold"
@@ -530,7 +533,7 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
                           <div key={item.id || item.tempId} className="flex items-center space-x-4">
                             <div className="flex-1">
                               <Input
-                                placeholder="Item Name"
+                                placeholder={t('budgets:itemName')}
                                 value={item.name}
                                 onChange={(e) => updateItem(
                                   category.id, 
@@ -544,7 +547,7 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
                             <div className="w-32">
                               <Input
                                 type="number"
-                                placeholder="Amount"
+                                placeholder={t('common:amount')}
                                 value={item.amount}
                                 onChange={(e) => updateItem(
                                   category.id,
@@ -574,7 +577,7 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
                           onClick={() => addItem(category.id, category.tempId)}
                         >
                           <PlusCircle className="mr-2 h-4 w-4" />
-                          Add Item
+                          {t('budgets:addItem')}
                         </Button>
                       </div>
                     </CardContent>
@@ -585,10 +588,10 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button type="button" variant="outline" onClick={() => router.push(`/budgets/${budgetId}`)}>
-              Cancel
+              {t('common:cancel')}
             </Button>
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Budget'}
+              {isSaving ? t('common:saving') : t('common:save')}
             </Button>
           </CardFooter>
         </Card>
