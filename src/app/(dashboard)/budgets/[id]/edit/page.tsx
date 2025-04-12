@@ -369,7 +369,7 @@ export default function EditBudgetPage({ params }: { params: Promise<{ id: strin
             </div>
             <div className="mt-4">
               <Button variant="secondary" onClick={() => router.push('/budgets')}>
-                Back to Budgets
+                Back
               </Button>
             </div>
           </div>

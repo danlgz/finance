@@ -94,11 +94,11 @@ export default function BudgetsPage() {
 
   if (error) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
+      <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
         <div className="flex">
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
-            <div className="mt-2 text-sm text-red-700">
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Error</h3>
+            <div className="mt-2 text-sm text-red-700 dark:text-red-300">
               <p>{error}</p>
             </div>
           </div>
@@ -111,8 +111,8 @@ export default function BudgetsPage() {
     return (
       <div>
         <h1 className="text-3xl font-bold mb-8">Budgets</h1>
-        <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
-          <p className="text-gray-500">You need to create a household first before creating budgets.</p>
+        <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
+          <p className="text-gray-500 dark:text-gray-400">You need to create a household first before creating budgets.</p>
           <div className="mt-4">
             <Button onClick={() => router.push('/households/create')}>
               Create Household
@@ -133,14 +133,14 @@ export default function BudgetsPage() {
       <h1 className="text-3xl font-bold mb-8">Budgets</h1>
 
       <div className="mb-6">
-        <label htmlFor="householdSelect" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="householdSelect" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Select Household
         </label>
         <select
           id="householdSelect"
           value={selectedHouseholdId || ''}
           onChange={(e) => setSelectedHouseholdId(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-3 pr-10 text-base focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
         >
           {households.map((household) => (
             <option key={household.id} value={household.id}>
@@ -160,13 +160,13 @@ export default function BudgetsPage() {
           {budgets.map((budget) => (
             <div
               key={budget.id}
-              className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow"
+              className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-card text-card-foreground shadow"
             >
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
+                <h3 className="text-lg font-medium leading-6">
                   {budget.name}
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {monthNames[budget.month - 1]} {budget.year}
                 </p>
                 <div className="mt-4">
@@ -182,8 +182,8 @@ export default function BudgetsPage() {
           ))}
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
-          <p className="text-gray-500">No budgets found. Create your first budget!</p>
+        <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
+          <p className="text-gray-500 dark:text-gray-400">No budgets found. Create your first budget!</p>
           <div className="mt-4">
             <Button onClick={handleCreateBudget}>Create Budget</Button>
           </div>

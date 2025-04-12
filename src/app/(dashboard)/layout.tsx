@@ -70,13 +70,13 @@ export default function DashboardLayout({
   };
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
+    <div className="min-h-screen bg-background dark:bg-background">
+      <nav className="bg-card text-card-foreground shadow dark:bg-card dark:text-card-foreground">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between">
             <div className="flex">
               <div className="flex flex-shrink-0 items-center">
-                <span className="text-xl font-bold text-emerald-600">Finance</span>
+                <span className="text-xl font-bold text-primary dark:text-primary">Finance</span>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 {navigation.map((item) => {
@@ -87,8 +87,8 @@ export default function DashboardLayout({
                       href={item.href}
                       className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
                         isActive
-                          ? 'border-emerald-500 text-gray-900'
-                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                          ? 'border-primary text-foreground dark:border-primary dark:text-foreground'
+                          : 'border-transparent text-muted-foreground hover:border-muted hover:text-foreground dark:text-muted-foreground dark:hover:border-muted dark:hover:text-foreground'
                       }`}
                     >
                       {item.name}
@@ -101,7 +101,7 @@ export default function DashboardLayout({
               <div className="flex items-center space-x-4">
                 <button
                   onClick={handleProfileClick}
-                  className="flex items-center space-x-1 text-sm text-gray-700 hover:text-emerald-600 transition-colors"
+                  className="flex items-center space-x-1 text-sm text-foreground hover:text-primary transition-colors dark:text-foreground dark:hover:text-primary"
                 >
                   <span>{userInfo?.name || session?.user?.name || 'User'}</span>
                   <svg 
@@ -132,7 +132,7 @@ export default function DashboardLayout({
         </div>
       </nav>
 
-      <main className="py-10">
+      <main className="py-10 dark:bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {children}
         </div>

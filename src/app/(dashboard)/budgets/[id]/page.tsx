@@ -1,220 +1,127 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
-interface ExpenseItem {
+interface Expense {
   id: string;
-  name: string;
   amount: number;
-  expenses: {
-    id: string;
-    amount: number;
-    description: string | null;
-    date: string;
-  }[];
+  description: string;
+  date: string;
+  categoryId: string;
 }
 
 interface Category {
   id: string;
   name: string;
-  items: ExpenseItem[];
+  budgetedAmount: number;
+  expenses: Expense[];
 }
 
 interface Budget {
   id: string;
-  name: string;
   month: number;
   year: number;
-  currency: string;
   household: {
     id: string;
     name: string;
   };
   categories: Category[];
-  incomeData: {
-    id: string;
-    amount: number;
-    description: string | null;
-    date: string;
-    incomeCategory: {
-      id: string;
-      name: string;
-    };
-  }[];
+  incomeAmount: number;
 }
 
-export default function BudgetDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const budgetId = resolvedParams.id;
-  
-  const [budget, setBudget] = useState<Budget | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function BudgetDetailsPage() {
+  const params = useParams();
   const router = useRouter();
+  const [budget, setBudget] = useState<Budget | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-        const response = await fetch(`/api/budgets/${budgetId}`);
+        setLoading(true);
+        const response = await fetch(`/api/budgets/${params.id}`);
         
         if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('Budget not found');
-          } else if (response.status === 403) {
-            throw new Error('You do not have access to this budget');
-          } else {
-            throw new Error('Failed to fetch budget');
-          }
+          throw new Error("Failed to fetch budget");
         }
         
         const data = await response.json();
         setBudget(data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching budget details:', error);
-        setError(error instanceof Error ? error.message : 'Something went wrong');
-        setIsLoading(false);
+      } catch (err) {
+        console.error("Error fetching budget:", err);
+        setError("Failed to load budget details");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchBudget();
-  }, [budgetId]);
-
-  // Calculate totals for budget
-  const calculateTotals = () => {
-    if (!budget) return { 
-      budgeted: 0, 
-      spent: 0, 
-      remaining: 0, 
-      totalIncome: 0,
-      incomeRemaining: 0
-    };
-
-    // Calculate budgeted amount
-    let budgeted = 0;
-    budget.categories.forEach(category => {
-      category.items.forEach(item => {
-        budgeted += item.amount;
-      });
-    });
-
-    // Calculate spent amount
-    let spent = 0;
-    budget.categories.forEach(category => {
-      category.items.forEach(item => {
-        item.expenses.forEach(expense => {
-          spent += expense.amount;
-        });
-      });
-    });
-
-    // Calculate total income
-    let totalIncome = 0;
-    budget.incomeData.forEach(income => {
-      totalIncome += income.amount;
-    });
-
-    const remaining = budgeted - spent;
-    const incomeRemaining = totalIncome - spent;
-
-    return { 
-      budgeted, 
-      spent, 
-      remaining, 
-      totalIncome,
-      incomeRemaining
-    };
-  };
-
-  const totals = calculateTotals();
-
-  // Get currency symbol
-  const getCurrencySymbol = (currency: string) => {
-    switch (currency) {
-      case 'GTQ':
-        return 'Q';
-      case 'USD':
-        return '$';
-      case 'EUR':
-        return '€';
-      default:
-        return '';
+    if (params.id) {
+      fetchBudget();
     }
+  }, [params.id]);
+
+  const handleBackClick = () => {
+    router.back();
   };
 
-  // Format month name
-  const getMonthName = (month: number) => {
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June', 
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return monthNames[month - 1];
+  const calculateTotalBudgeted = () => {
+    if (!budget?.categories) return 0;
+    return budget.categories.reduce((total, category) => total + category.budgetedAmount, 0);
   };
 
-  if (isLoading) {
+  const calculateTotalExpenses = () => {
+    if (!budget?.categories) return 0;
+    return budget.categories.reduce((total, category) => {
+      const categoryExpenses = category.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      return total + categoryExpenses;
+    }, 0);
+  };
+
+  const calculateRemaining = () => {
+    return budget?.incomeAmount ? budget.incomeAmount - calculateTotalBudgeted() : 0;
+  };
+
+  if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <p className="text-xl">Loading...</p>
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (error) {
+  if (error || !budget) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
-        <div className="flex">
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
-            <div className="mt-2 text-sm text-red-700">
-              <p>{error}</p>
-            </div>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <Button variant="outline" onClick={handleBackClick}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <Card>
+          <CardContent className="flex items-center justify-center h-60">
+            <p className="text-muted-foreground">{error || "Budget not found"}</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
-
-  if (!budget) {
-    return (
-      <div className="rounded-md bg-amber-50 p-4">
-        <div className="flex">
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-amber-800">Budget not found</h3>
-            <div className="mt-2 text-sm text-amber-700">
-              <p>The requested budget could not be found.</p>
-            </div>
-            <div className="mt-4">
-              <Button onClick={() => router.push('/budgets')}>
-                Back to Budgets
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const currencySymbol = getCurrencySymbol(budget.currency);
 
   return (
-    <div>
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">{budget.name}</h1>
-          <p className="text-gray-600">
-            {getMonthName(budget.month)} {budget.year} • {budget.household.name}
-          </p>
-        </div>
-        <div className="flex space-x-3">
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={handleBackClick}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <h1 className="text-3xl font-bold">{budget.household.name} Budget - {new Date(budget.year, budget.month - 1).toLocaleString('default', { month: 'long' })} {budget.year}</h1>
+        <div className="ml-auto">
           <Button 
             variant="outline"
-            onClick={() => router.push('/budgets')}
-          >
-            Back to Budgets
-          </Button>
-          <Button
             onClick={() => router.push(`/budgets/${budget.id}/edit`)}
           >
             Edit Budget
@@ -222,140 +129,183 @@ export default function BudgetDetailsPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Budgeted</p>
-          <p className="text-2xl font-bold">{currencySymbol}{totals.budgeted.toFixed(2)}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Total Income</p>
-          <p className="text-2xl font-bold">{currencySymbol}{totals.totalIncome.toFixed(2)}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Spent</p>
-          <p className="text-2xl font-bold">{currencySymbol}{totals.spent.toFixed(2)}</p>
-        </div>
-        <div className={`bg-white p-4 rounded-lg shadow ${totals.remaining < 0 ? 'bg-red-50' : ''}`}>
-          <p className="text-sm text-gray-500">Budget Remaining</p>
-          <p className={`text-2xl font-bold ${totals.remaining < 0 ? 'text-red-600' : ''}`}>
-            {currencySymbol}{totals.remaining.toFixed(2)}
-          </p>
-        </div>
-        <div className={`bg-white p-4 rounded-lg shadow ${totals.incomeRemaining < 0 ? 'bg-red-50' : ''}`}>
-          <p className="text-sm text-gray-500">Income Remaining</p>
-          <p className={`text-2xl font-bold ${totals.incomeRemaining < 0 ? 'text-red-600' : ''}`}>
-            {currencySymbol}{totals.incomeRemaining.toFixed(2)}
-          </p>
-        </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Budget Details</CardTitle>
+            <CardDescription>
+              {budget.month}/{budget.year} for {budget.household.name}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Total Budget:</span>
+              <span className="font-bold">{formatCurrency(budget.incomeAmount)}</span>
+            </div>
+
+            {budget.categories && budget.categories.length > 0 ? (
+              <div className="space-y-2">
+                <h3 className="font-semibold">Categories</h3>
+                <div className="space-y-2">
+                  {budget.categories.map((category) => (
+                    <div key={category.id} className="flex justify-between items-center p-2 bg-secondary/20 rounded-md">
+                      <span>{category.name}</span>
+                      <span>{formatCurrency(category.budgetedAmount)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No categories defined</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Income Summary</CardTitle>
+            <CardDescription>
+              For the same period ({budget.month}/{budget.year})
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {budget.incomeAmount > 0 ? (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Total Income:</span>
+                  <span className="font-bold">
+                    {formatCurrency(budget.incomeAmount)}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No income registered for this period</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Categories and Items */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Budget Categories</h2>
-        
-        {budget.categories.length > 0 ? (
-          <div className="space-y-4">
-            {budget.categories.map((category) => (
-              <div key={category.id} className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-lg font-medium mb-2">{category.name}</h3>
-                
-                {category.items.length > 0 ? (
-                  <div className="overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budgeted</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Spent</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {category.items.map((item) => {
-                          // Calculate total spent for this item
-                          const itemSpent = item.expenses.reduce((total, expense) => total + expense.amount, 0);
-                          const itemRemaining = item.amount - itemSpent;
-                          
-                          return (
-                            <tr key={item.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{currencySymbol}{item.amount.toFixed(2)}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{currencySymbol}{itemSpent.toFixed(2)}</td>
-                              <td className={`px-6 py-4 whitespace-nowrap ${itemRemaining < 0 ? 'text-red-600' : ''}`}>
-                                {currencySymbol}{itemRemaining.toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => router.push(`/expenses/add?expenseItemId=${item.id}`)}
-                                >
-                                  Add Expense
-                                </Button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-4">No items in this category</p>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
-            <p className="text-gray-500">No categories found. Add categories to your budget!</p>
-            <div className="mt-4">
-              <Button onClick={() => router.push(`/budgets/${budget.id}/edit`)}>
-                Edit Budget
-              </Button>
-            </div>
-          </div>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Budgeted</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{formatCurrency(calculateTotalBudgeted())}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Spent</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{formatCurrency(calculateTotalExpenses())}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Remaining to Budget</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className={`text-2xl font-bold ${calculateRemaining() < 0 ? 'text-red-500' : 'text-green-500'}`}>
+              {formatCurrency(calculateRemaining())}
+            </p>
+          </CardContent>
+        </Card>
       </div>
-      
-      {/* Income Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Income</h2>
-        
-        {budget.incomeData && budget.incomeData.length > 0 ? (
-          <div className="bg-white p-4 rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Budget Summary</CardTitle>
+          <CardDescription>Overview of your budget categories and expenses</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2">Category</th>
+                  <th className="text-right py-2">Budgeted</th>
+                  <th className="text-right py-2">Spent</th>
+                  <th className="text-right py-2">Remaining</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {budget.incomeData.map((income) => (
-                  <tr key={income.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{income.incomeCategory.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{income.description || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{new Date(income.date).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{currencySymbol}{income.amount.toFixed(2)}</td>
-                  </tr>
-                ))}
+              <tbody>
+                {budget.categories.map((category) => {
+                  const totalExpenses = category.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+                  const remaining = category.budgetedAmount - totalExpenses;
+                  
+                  return (
+                    <tr key={category.id} className="border-b hover:bg-gray-50">
+                      <td className="py-2">{category.name}</td>
+                      <td className="text-right py-2">{formatCurrency(category.budgetedAmount)}</td>
+                      <td className="text-right py-2">{formatCurrency(totalExpenses)}</td>
+                      <td className={`text-right py-2 ${remaining < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                        {formatCurrency(remaining)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
+              <tfoot>
+                <tr className="font-bold">
+                  <td className="py-2">Total</td>
+                  <td className="text-right py-2">{formatCurrency(calculateTotalBudgeted())}</td>
+                  <td className="text-right py-2">{formatCurrency(calculateTotalExpenses())}</td>
+                  <td className="text-right py-2">{formatCurrency(calculateTotalBudgeted() - calculateTotalExpenses())}</td>
+                </tr>
+              </tfoot>
             </table>
           </div>
-        ) : (
-          <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
-            <p className="text-gray-500">No income recorded for this month</p>
-            <div className="mt-4">
-              <Button onClick={() => router.push(`/income/add?budgetId=${budget.id}`)}>
-                Add Income
+        </CardContent>
+      </Card>
+
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Category Details</h2>
+        {budget.categories.map((category) => (
+          <Card key={category.id}>
+            <CardHeader>
+              <CardTitle>{category.name}</CardTitle>
+              <CardDescription>
+                {formatCurrency(category.budgetedAmount)} budgeted | 
+                {formatCurrency(category.expenses.reduce((sum, expense) => sum + expense.amount, 0))} spent
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {category.expenses.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">Date</th>
+                        <th className="text-left py-2">Description</th>
+                        <th className="text-right py-2">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {category.expenses.map((expense) => (
+                        <tr key={expense.id} className="border-b hover:bg-gray-50">
+                          <td className="py-2">{new Date(expense.date).toLocaleDateString()}</td>
+                          <td className="py-2">{expense.description}</td>
+                          <td className="text-right py-2">{formatCurrency(expense.amount)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500">No expenses recorded for this category.</p>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button variant="outline" onClick={() => router.push(`/expenses/new?categoryId=${category.id}`)}>
+                Add Expense
               </Button>
-            </div>
-          </div>
-        )}
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );
