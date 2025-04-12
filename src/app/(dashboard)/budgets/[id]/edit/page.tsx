@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -58,10 +58,13 @@ interface Budget {
   categories: BudgetCategory[];
 }
 
-export default function EditBudgetPage({ params }: { params: { id: string } }) {
+export default function EditBudgetPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const budgetId = resolvedParams.id;
+  
   const [households, setHouseholds] = useState<Household[]>([]);
   const [formData, setFormData] = useState<Budget>({
-    id: params.id,
+    id: budgetId,
     name: '',
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
@@ -78,7 +81,7 @@ export default function EditBudgetPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-        const response = await fetch(`/api/budgets/${params.id}`);
+        const response = await fetch(`/api/budgets/${budgetId}`);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -137,7 +140,7 @@ export default function EditBudgetPage({ params }: { params: { id: string } }) {
     };
 
     Promise.all([fetchBudget(), fetchHouseholds()]);
-  }, [params.id]);
+  }, [budgetId]);
 
   // Handle form changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -324,7 +327,7 @@ export default function EditBudgetPage({ params }: { params: { id: string } }) {
       }
       
       // Submit the form
-      const response = await fetch(`/api/budgets/${params.id}`, {
+      const response = await fetch(`/api/budgets/${budgetId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -338,7 +341,7 @@ export default function EditBudgetPage({ params }: { params: { id: string } }) {
       }
       
       toast.success('Budget updated successfully');
-      router.push(`/budgets/${params.id}`);
+      router.push(`/budgets/${budgetId}`);
     } catch (error) {
       console.error('Error updating budget:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to update budget');
@@ -379,7 +382,7 @@ export default function EditBudgetPage({ params }: { params: { id: string } }) {
     <div>
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold">Edit Budget</h1>
-        <Button variant="outline" onClick={() => router.push(`/budgets/${params.id}`)}>
+        <Button variant="outline" onClick={() => router.push(`/budgets/${budgetId}`)}>
           Cancel
         </Button>
       </div>
@@ -581,7 +584,7 @@ export default function EditBudgetPage({ params }: { params: { id: string } }) {
             )}
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button type="button" variant="outline" onClick={() => router.push(`/budgets/${params.id}`)}>
+            <Button type="button" variant="outline" onClick={() => router.push(`/budgets/${budgetId}`)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSaving}>

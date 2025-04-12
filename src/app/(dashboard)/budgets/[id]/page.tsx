@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 
 interface ExpenseItem {
   id: string;
@@ -45,7 +45,10 @@ interface Budget {
   }[];
 }
 
-export default function BudgetDetailsPage({ params }: { params: { id: string } }) {
+export default function BudgetDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const budgetId = resolvedParams.id;
+  
   const [budget, setBudget] = useState<Budget | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +57,7 @@ export default function BudgetDetailsPage({ params }: { params: { id: string } }
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-        const response = await fetch(`/api/budgets/${params.id}`);
+        const response = await fetch(`/api/budgets/${budgetId}`);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -77,7 +80,7 @@ export default function BudgetDetailsPage({ params }: { params: { id: string } }
     };
 
     fetchBudget();
-  }, [params.id]);
+  }, [budgetId]);
 
   // Calculate totals for budget
   const calculateTotals = () => {
