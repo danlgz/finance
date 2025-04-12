@@ -43,6 +43,7 @@ A Next.js application for managing personal finances, budgets, and expenses.
    ```bash
    npm install
    ```
+   > Note: The Prisma Client will be automatically generated during the installation process via the postinstall script.
 
 3. Start the Docker services (including PostgreSQL):
    ```bash
