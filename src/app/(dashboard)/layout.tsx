@@ -5,6 +5,7 @@ import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface UserInfo {
   name: string;
@@ -99,6 +100,7 @@ export default function DashboardLayout({
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
               <div className="flex items-center space-x-4">
+                <ThemeToggle />
                 <button
                   onClick={handleProfileClick}
                   className="flex items-center space-x-1 text-sm text-foreground hover:text-primary transition-colors dark:text-foreground dark:hover:text-primary"
