@@ -99,6 +99,9 @@
     "itemName": "Nombre de Elemento",
     "addItem": "Añadir Elemento",
     "updateSuccess": "Presupuesto actualizado con éxito",
+    "items": "Elementos del Presupuesto",
+    "expenses": "Gastos Registrados",
+    "itemsDetail": "Ver detalles del presupuesto para ver los elementos individuales y gastos de esta categoría.",
     "errors": {
       "nameRequired": "El nombre del presupuesto es obligatorio",
       "selectHousehold": "Por favor selecciona un hogar",

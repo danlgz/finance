@@ -4,16 +4,21 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronRight } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useTranslate } from "@/hooks/useTranslate";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useTranslation } from "react-i18next";
+import Link from "next/link";
+import React from "react";
 
 interface Expense {
   id: string;
-  amount: number;
   description: string;
+  amount: number;
   date: string;
   categoryId: string;
+  itemId?: string;
 }
 
 interface Category {
@@ -21,6 +26,12 @@ interface Category {
   name: string;
   budgetedAmount: number;
   expenses: Expense[];
+  items?: {
+    id: string;
+    name: string;
+    amount: number;
+    expenses?: Expense[];
+  }[];
 }
 
 interface Budget {
@@ -43,6 +54,7 @@ export default function BudgetDetailsPage() {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchBudget = async () => {
@@ -73,7 +85,8 @@ export default function BudgetDetailsPage() {
             id: category.id,
             name: category.name,
             budgetedAmount,
-            expenses
+            expenses,
+            items: category.items // Guardar también los items originales
           };
         });
         
@@ -123,6 +136,24 @@ export default function BudgetDetailsPage() {
   // Helper function to format currency using the budget's currency
   const formatBudgetCurrency = (amount: number) => {
     return formatCurrency(amount, budget?.currency || 'USD');
+  };
+
+  // Helper function to format dates consistently
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
   };
 
   if (loading) {
@@ -264,78 +295,126 @@ export default function BudgetDetailsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2">{t('budgets:category')}</th>
-                  <th className="text-right py-2">{t('budgets:budgeted')}</th>
-                  <th className="text-right py-2">{t('budgets:spent')}</th>
-                  <th className="text-right py-2">{t('budgets:remaining')}</th>
+                  <th className="w-8"></th>
+                  <th className="text-left py-2 font-bold">{t('budgets:category')}</th>
+                  <th className="w-32 text-right py-2 font-bold">{t('budgets:budgeted')}</th>
+                  <th className="w-32 text-right py-2 font-bold">{t('budgets:spent')}</th>
+                  <th className="w-32 text-right py-2 font-bold">{t('budgets:remaining')}</th>
                 </tr>
               </thead>
               <tbody>
                 {budget.categories.map((category) => {
                   const totalExpenses = category.expenses.reduce((sum, expense) => sum + expense.amount, 0);
                   const remaining = category.budgetedAmount - totalExpenses;
+                  const categoryId = `category-${category.id}`;
                   
                   return (
-                    <tr key={category.id} className="border-b hover:bg-secondary/20">
-                      <td className="py-2">{category.name}</td>
-                      <td className="text-right py-2">{formatBudgetCurrency(category.budgetedAmount)}</td>
-                      <td className="text-right py-2">{formatBudgetCurrency(totalExpenses)}</td>
-                      <td className={`text-right py-2 ${remaining < 0 ? 'text-destructive' : 'text-primary'}`}>
-                        {formatBudgetCurrency(remaining)}
-                      </td>
-                    </tr>
+                    <React.Fragment key={categoryId}>
+                      <tr 
+                        className="border-b hover:bg-secondary/10 transition-colors cursor-pointer"
+                        onClick={() => toggleCategory(categoryId)}
+                      >
+                        <td className="w-8">
+                          <div className="flex w-8 justify-center p-2">
+                            <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${expandedCategories.includes(categoryId) ? 'rotate-90' : ''}`} />
+                          </div>
+                        </td>
+                        <td className="py-2 font-medium">{category.name}</td>
+                        <td className="text-right py-2 w-32 font-medium">
+                          {formatBudgetCurrency(category.budgetedAmount)}
+                        </td>
+                        <td className="text-right py-2 w-32 font-medium">
+                          {formatBudgetCurrency(totalExpenses)}
+                        </td>
+                        <td className={`text-right py-2 w-32 font-medium ${remaining < 0 ? 'text-destructive' : 'text-primary'}`}>
+                          {formatBudgetCurrency(remaining)}
+                        </td>
+                      </tr>
+                      
+                      {expandedCategories.includes(categoryId) && (
+                        <tr className="border-b-0">
+                          <td colSpan={5} className="p-0">
+                            <div className="py-4 pl-8">
+                              <table className="w-full">
+                                <tbody>
+                                  {category.items?.map((item) => {
+                                    // Calcular los gastos para este ítem específico
+                                    const itemExpenses = category.expenses.filter(
+                                      (expense) => expense.categoryId === category.id && 
+                                      expense.itemId === item.id
+                                    );
+                                    const itemSpent = itemExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+                                    const itemRemaining = item.amount - itemSpent;
+                                    
+                                    return (
+                                      <tr key={item.id} className="border-b hover:bg-secondary/10">
+                                        <td className="py-2 pl-4 text-sm">{item.name}</td>
+                                        <td className="text-right py-2 w-32 text-sm">
+                                          {formatBudgetCurrency(item.amount)}
+                                        </td>
+                                        <td className="text-right py-2 w-32 text-sm">
+                                          {formatBudgetCurrency(itemSpent)}
+                                        </td>
+                                        <td className={`text-right py-2 w-32 text-sm ${itemRemaining < 0 ? 'text-destructive font-semibold' : itemRemaining === 0 ? 'text-muted-foreground' : 'text-primary'}`}>
+                                          {formatBudgetCurrency(itemRemaining)}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                              
+                              {category.expenses.length > 0 && (
+                                <div className="mt-6">
+                                  <h4 className="text-md font-medium mb-2">{t('budgets:expenses')}</h4>
+                                  <table className="w-full">
+                                    <thead>
+                                      <tr className="border-b text-sm">
+                                        <th className="text-left py-2">{t('common:date')}</th>
+                                        <th className="text-left py-2">{t('common:description')}</th>
+                                        <th className="w-32 text-right py-2">{t('common:amount')}</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {category.expenses.map((expense) => (
+                                        <tr key={expense.id} className="border-b hover:bg-secondary/10">
+                                          <td className="py-2">{formatDate(expense.date)}</td>
+                                          <td className="py-2">{expense.description}</td>
+                                          <td className="text-right py-2 w-32">
+                                            {formatBudgetCurrency(expense.amount)}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
-              </tbody>
-              <tfoot>
-                <tr className="font-bold">
-                  <td className="py-2">{t('budgets:total')}</td>
-                  <td className="text-right py-2">{formatBudgetCurrency(calculateTotalBudgeted())}</td>
-                  <td className="text-right py-2">{formatBudgetCurrency(calculateTotalExpenses())}</td>
-                  <td className="text-right py-2">{formatBudgetCurrency(calculateTotalBudgeted() - calculateTotalExpenses())}</td>
+                
+                <tr className="border-t">
+                  <td className="w-8"></td>
+                  <td className="py-4 font-bold">{t('budgets:total')}</td>
+                  <td className="text-right py-4 w-32 font-bold">
+                    {formatBudgetCurrency(calculateTotalBudgeted())}
+                  </td>
+                  <td className="text-right py-4 w-32 font-bold">
+                    {formatBudgetCurrency(calculateTotalExpenses())}
+                  </td>
+                  <td className={`text-right py-4 w-32 font-bold ${(calculateTotalBudgeted() - calculateTotalExpenses()) < 0 ? 'text-destructive' : 'text-primary'}`}>
+                    {formatBudgetCurrency(calculateTotalBudgeted() - calculateTotalExpenses())}
+                  </td>
                 </tr>
-              </tfoot>
+              </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
-
-      {budget.categories.map((category) => (
-        <Card key={category.id} className="mb-6">
-          <CardHeader>
-            <CardTitle>{category.name}</CardTitle>
-            <CardDescription>
-              {t('budgets:budgeted')}: {formatBudgetCurrency(category.budgetedAmount)}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {category.expenses.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2">{t('common:date')}</th>
-                      <th className="text-left py-2">{t('common:description')}</th>
-                      <th className="text-right py-2">{t('common:amount')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {category.expenses.map((expense) => (
-                      <tr key={expense.id} className="border-b hover:bg-secondary/20">
-                        <td className="py-2">{new Date(expense.date).toLocaleDateString()}</td>
-                        <td className="py-2">{expense.description}</td>
-                        <td className="text-right py-2">{formatBudgetCurrency(expense.amount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-muted-foreground">{t('budgets:noExpensesRecorded')}</p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
     </div>
   );
 } 

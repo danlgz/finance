@@ -99,6 +99,9 @@
     "itemName": "Item Name",
     "addItem": "Add Item",
     "updateSuccess": "Budget updated successfully",
+    "items": "Budget Items",
+    "expenses": "Recorded Expenses",
+    "itemsDetail": "View budget details to see individual items and expenses for this category.",
     "errors": {
       "nameRequired": "Budget name is required",
       "selectHousehold": "Please select a household",
