@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  name           String?
+  password       String
+  households     UserHousehold[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Household {
+  id              String          @id @default(uuid())
+  name            String
+  users           UserHousehold[]
+  budgets         Budget[]
+  categories      Category[]
+  expenseItems    ExpenseItem[]
+  expenses        Expense[]
+  incomeCategories IncomeCategory[]
+  incomes         Income[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model UserHousehold {
+  id          String    @id @default(uuid())
+  userId      String
+  householdId String
+  role        UserRole  @default(MEMBER)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, householdId])
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Budget {
+  id          String      @id @default(uuid())
+  name        String
+  month       Int
+  year        Int
+  householdId String
+  household   Household   @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  categories  Category[]
+  currency    Currency    @default(GTQ)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([householdId, month, year])
+}
+
+model Category {
+  id          String       @id @default(uuid())
+  name        String
+  budgetId    String
+  budget      Budget       @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  householdId String
+  household   Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  items       ExpenseItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model ExpenseItem {
+  id          String      @id @default(uuid())
+  name        String
+  amount      Float
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  householdId String
+  household   Household   @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Expense {
+  id            String      @id @default(uuid())
+  description   String?
+  amount        Float
+  date          DateTime
+  expenseItemId String
+  expenseItem   ExpenseItem @relation(fields: [expenseItemId], references: [id], onDelete: Cascade)
+  householdId   String
+  household     Household   @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model IncomeCategory {
+  id          String    @id @default(uuid())
+  name        String
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  incomes     Income[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Income {
+  id              String        @id @default(uuid())
+  description     String?
+  amount          Float
+  date            DateTime
+  incomeCategoryId String
+  incomeCategory   IncomeCategory @relation(fields: [incomeCategoryId], references: [id], onDelete: Cascade)
+  householdId     String
+  household       Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+enum Currency {
+  GTQ // Quetzal
+  USD // US Dollar
+  EUR // Euro
+}
