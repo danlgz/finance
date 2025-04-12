@@ -35,7 +35,7 @@ A Next.js application for managing personal finances, budgets, and expenses.
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd finance-app
+   cd finance
    ```
 
 2. Install dependencies:
