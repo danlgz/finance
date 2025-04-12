@@ -9,6 +9,7 @@
     "error": "Error",
     "success": "Success",
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "edit": "Edit",
     "delete": "Delete",
@@ -20,7 +21,11 @@
     "for": "for",
     "date": "Date",
     "description": "Description",
-    "amount": "Amount"
+    "amount": "Amount",
+    "currency": "Currency",
+    "month": "Month",
+    "year": "Year",
+    "household": "Household"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -69,7 +74,32 @@
     "total": "Total",
     "month": "Month",
     "year": "Year",
-    "noExpensesRecorded": "No expenses recorded for this category."
+    "noExpensesRecorded": "No expenses recorded for this category.",
+    "budgetInformation": "Budget Information",
+    "basicInfoDesc": "Basic information about your budget",
+    "budgetName": "Budget Name",
+    "budgetNamePlaceholder": "e.g., Monthly Budget",
+    "selectMonth": "Select month",
+    "selectYear": "Select year",
+    "selectCurrency": "Select currency",
+    "categoriesDesc": "Define your budget categories and items",
+    "addCategory": "Add Category",
+    "noCategoriesYet": "No categories yet. Add a category to get started",
+    "categoryName": "Category Name",
+    "itemName": "Item Name",
+    "addItem": "Add Item",
+    "updateSuccess": "Budget updated successfully",
+    "errors": {
+      "nameRequired": "Budget name is required",
+      "selectHousehold": "Please select a household",
+      "addCategory": "Please add at least one category",
+      "categoryNameRequired": "All categories must have a name",
+      "categoryNeedsItems": "Category \"{{category}}\" must have at least one item",
+      "itemNameRequired": "All items in category \"{{category}}\" must have a name",
+      "itemAmountInvalid": "Item \"{{item}}\" in category \"{{category}}\" must have a valid amount greater than zero",
+      "updateFailed": "Failed to update budget",
+      "genericError": "Failed to update budget"
+    }
   },
   "households": {
     "title": "Your Households",
@@ -91,5 +121,10 @@
     "spanish": "Spanish",
     "updateProfile": "Update Profile",
     "profileUpdated": "Profile updated successfully"
+  },
+  "currencies": {
+    "gtq": "Guatemalan Quetzal (GTQ)",
+    "usd": "US Dollar (USD)",
+    "eur": "Euro (EUR)"
   }
 } 

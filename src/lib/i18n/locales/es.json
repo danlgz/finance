@@ -9,6 +9,7 @@
     "error": "Error",
     "success": "Éxito",
     "save": "Guardar",
+    "saving": "Guardando...",
     "cancel": "Cancelar",
     "edit": "Editar",
     "delete": "Eliminar",
@@ -20,7 +21,11 @@
     "for": "para",
     "date": "Fecha",
     "description": "Descripción",
-    "amount": "Monto"
+    "amount": "Monto",
+    "currency": "Moneda",
+    "month": "Mes",
+    "year": "Año",
+    "household": "Hogar"
   },
   "dashboard": {
     "title": "Panel",
@@ -69,7 +74,32 @@
     "total": "Total",
     "month": "Mes",
     "year": "Año",
-    "noExpensesRecorded": "No hay gastos registrados para esta categoría."
+    "noExpensesRecorded": "No hay gastos registrados para esta categoría.",
+    "budgetInformation": "Información del Presupuesto",
+    "basicInfoDesc": "Información básica de tu presupuesto",
+    "budgetName": "Nombre del Presupuesto",
+    "budgetNamePlaceholder": "ej., Presupuesto Mensual",
+    "selectMonth": "Seleccionar mes",
+    "selectYear": "Seleccionar año",
+    "selectCurrency": "Seleccionar moneda",
+    "categoriesDesc": "Define las categorías y elementos de tu presupuesto",
+    "addCategory": "Añadir Categoría",
+    "noCategoriesYet": "Aún no hay categorías. Añade una categoría para empezar",
+    "categoryName": "Nombre de Categoría",
+    "itemName": "Nombre de Elemento",
+    "addItem": "Añadir Elemento",
+    "updateSuccess": "Presupuesto actualizado con éxito",
+    "errors": {
+      "nameRequired": "El nombre del presupuesto es obligatorio",
+      "selectHousehold": "Por favor selecciona un hogar",
+      "addCategory": "Por favor añade al menos una categoría",
+      "categoryNameRequired": "Todas las categorías deben tener un nombre",
+      "categoryNeedsItems": "La categoría \"{{category}}\" debe tener al menos un elemento",
+      "itemNameRequired": "Todos los elementos en la categoría \"{{category}}\" deben tener un nombre",
+      "itemAmountInvalid": "El elemento \"{{item}}\" en la categoría \"{{category}}\" debe tener un monto válido mayor que cero",
+      "updateFailed": "Error al actualizar el presupuesto",
+      "genericError": "Error al actualizar el presupuesto"
+    }
   },
   "households": {
     "title": "Tus Hogares",
@@ -91,5 +121,10 @@
     "spanish": "Español",
     "updateProfile": "Actualizar Perfil",
     "profileUpdated": "Perfil actualizado correctamente"
+  },
+  "currencies": {
+    "gtq": "Quetzal Guatemalteco (GTQ)",
+    "usd": "Dólar Estadounidense (USD)",
+    "eur": "Euro (EUR)"
   }
 } 
