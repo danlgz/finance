@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:up": "docker-compose up -d",
-    "db:down": "docker-compose down",
-    "db:reset": "docker-compose down -v && docker-compose up -d"
+    "services:up": "docker-compose up -d",
+    "services:down": "docker-compose down",
+    "services:reset": "docker-compose down -v && docker-compose up -d",
+    "services:logs": "docker-compose logs -f"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

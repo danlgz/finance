@@ -28,7 +28,7 @@ A Next.js application for managing personal finances, budgets, and expenses.
 ### Prerequisites
 
 - Node.js 18+ and npm/yarn
-- Docker and Docker Compose (for local development database)
+- Docker and Docker Compose (for local development services)
 - PostgreSQL (optional for production)
 
 ### Installation
@@ -44,9 +44,9 @@ A Next.js application for managing personal finances, budgets, and expenses.
    npm install
    ```
 
-3. Start the PostgreSQL database using Docker:
+3. Start the Docker services (including PostgreSQL):
    ```bash
-   docker-compose up -d
+   npm run services:up
    ```
 
 4. Set up your environment variables:
@@ -69,17 +69,27 @@ A Next.js application for managing personal finances, budgets, and expenses.
 
 7. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-### Stopping the Database
+### Managing Docker Services
 
-To stop the PostgreSQL database container:
-```bash
-docker-compose down
-```
+- Start all services:
+  ```bash
+  npm run services:up
+  ```
 
-To stop and remove all data volumes (this will delete all database data):
-```bash
-docker-compose down -v
-```
+- View service logs:
+  ```bash
+  npm run services:logs
+  ```
+
+- Stop all services:
+  ```bash
+  npm run services:down
+  ```
+
+- Reset all services (removes data volumes and restarts):
+  ```bash
+  npm run services:reset
+  ```
 
 ## Project Structure
 
