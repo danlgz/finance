@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from '@/components/providers/theme-provider';
+import I18nProvider from '@/components/providers/i18n-provider';
+import { Toaster } from 'sonner';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,9 +33,12 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <SessionProvider>
-            {children}
+            <I18nProvider>
+              {children}
+            </I18nProvider>
           </SessionProvider>
         </ThemeProvider>
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

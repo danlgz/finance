@@ -164,4 +164,64 @@ export async function PATCH(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Update user details
+export async function PUT(request: Request) {
+  try {
+    const session = await getServerSession();
+    
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
+    const body = await request.json();
+    
+    // Validate input
+    if (!body.name && !body.language) {
+      return NextResponse.json(
+        { error: 'No valid fields to update' },
+        { status: 400 }
+      );
+    }
+    
+    if (body.language && !['en', 'es'].includes(body.language)) {
+      return NextResponse.json(
+        { error: 'Invalid language' },
+        { status: 400 }
+      );
+    }
+    
+    // Update data
+    const updateData: { name?: string; language?: string } = {};
+    
+    if (body.name) {
+      updateData.name = body.name;
+    }
+    
+    if (body.language) {
+      updateData.language = body.language;
+    }
+    
+    const updatedUser = await prisma.user.update({
+      where: {
+        email: session.user.email,
+      },
+      data: updateData,
+    });
+    
+    // Don't return sensitive information
+    const { password, ...userWithoutPassword } = updatedUser;
+    
+    return NextResponse.json(userWithoutPassword);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 } 

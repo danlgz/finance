@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useTranslate } from '@/hooks/useTranslate';
 
 interface UserInfo {
   name: string;
@@ -17,6 +18,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useTranslate();
   const { data: session, update: updateSession } = useSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -61,9 +63,9 @@ export default function DashboardLayout({
   }, [session?.user?.id]); // Only depend on the user ID, not the entire session object
   
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Budgets', href: '/budgets' },
-    { name: 'Households', href: '/households' },
+    { name: t('common:dashboard'), href: '/dashboard' },
+    { name: t('common:budgets'), href: '/budgets' },
+    { name: t('common:households'), href: '/households' },
   ];
   
   const handleProfileClick = () => {
@@ -126,7 +128,7 @@ export default function DashboardLayout({
                   variant="outline"
                   onClick={() => signOut({ callbackUrl: '/login' })}
                 >
-                  Sign out
+                  {t('common:signOut')}
                 </Button>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslate } from '@/hooks/useTranslate';
 
 interface Budget {
   id: string;
@@ -18,6 +19,7 @@ interface Household {
 }
 
 export default function BudgetsPage() {
+  const { t } = useTranslate();
   const [households, setHouseholds] = useState<Household[]>([]);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -87,7 +89,7 @@ export default function BudgetsPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <p className="text-xl">Loading...</p>
+        <p className="text-xl">{t('common:loading')}</p>
       </div>
     );
   }
@@ -97,7 +99,7 @@ export default function BudgetsPage() {
       <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
         <div className="flex">
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Error</h3>
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">{t('common:error')}</h3>
             <div className="mt-2 text-sm text-red-700 dark:text-red-300">
               <p>{error}</p>
             </div>
@@ -110,12 +112,12 @@ export default function BudgetsPage() {
   if (households.length === 0) {
     return (
       <div>
-        <h1 className="text-3xl font-bold mb-8">Budgets</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('budgets:title')}</h1>
         <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-          <p className="text-gray-500 dark:text-gray-400">You need to create a household first before creating budgets.</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('budgets:needHousehold')}</p>
           <div className="mt-4">
             <Button onClick={() => router.push('/households/create')}>
-              Create Household
+              {t('budgets:createHousehold')}
             </Button>
           </div>
         </div>
@@ -130,11 +132,11 @@ export default function BudgetsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Budgets</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('budgets:title')}</h1>
 
       <div className="mb-6">
         <label htmlFor="householdSelect" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Select Household
+          {t('budgets:selectHousehold')}
         </label>
         <select
           id="householdSelect"
@@ -151,8 +153,8 @@ export default function BudgetsPage() {
       </div>
 
       <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Budget List</h2>
-        <Button onClick={handleCreateBudget}>Create Budget</Button>
+        <h2 className="text-xl font-semibold">{t('budgets:budgetList')}</h2>
+        <Button onClick={handleCreateBudget}>{t('budgets:createBudget')}</Button>
       </div>
 
       {budgets.length > 0 ? (
@@ -167,14 +169,14 @@ export default function BudgetsPage() {
                   {budget.name}
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {monthNames[budget.month - 1]} {budget.year}
+                  {t(`budgets:month_${budget.month}`)} {budget.year}
                 </p>
                 <div className="mt-4">
                   <Button
                     variant="secondary"
                     onClick={() => handleViewBudget(budget.id)}
                   >
-                    View Details
+                    {t('budgets:viewDetails')}
                   </Button>
                 </div>
               </div>
@@ -183,9 +185,9 @@ export default function BudgetsPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No budgets found. Create your first budget!</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('budgets:noBudgetsFound')}</p>
           <div className="mt-4">
-            <Button onClick={handleCreateBudget}>Create Budget</Button>
+            <Button onClick={handleCreateBudget}>{t('budgets:createBudget')}</Button>
           </div>
         </div>
       )}

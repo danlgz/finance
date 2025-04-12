@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslate } from '@/hooks/useTranslate';
 
 interface Budget {
   id: string;
@@ -29,6 +30,7 @@ interface Household {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslate();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -104,7 +106,7 @@ export default function DashboardPage() {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-xl">Loading...</p>
+          <p className="text-xl">{t('common:loading')}</p>
         </div>
       </div>
     );
@@ -116,7 +118,7 @@ export default function DashboardPage() {
         <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Error</h3>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-300">{t('common:error')}</h3>
               <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <p>{error}</p>
               </div>
@@ -130,9 +132,9 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">{t('dashboard:title')}</h1>
         <p className="text-muted-foreground">
-          Welcome back, {session?.user?.name || 'User'}!
+          {t('common:welcome', { name: session?.user?.name || 'User' })}
         </p>
       </div>
 
@@ -140,7 +142,7 @@ export default function DashboardPage() {
         <>
           <div className="mb-6">
             <label htmlFor="householdSelect" className="block text-sm font-medium text-foreground">
-              Select Household
+              {t('dashboard:selectHousehold')}
             </label>
             <select
               id="householdSelect"
@@ -158,9 +160,9 @@ export default function DashboardPage() {
 
           <div className="mb-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Budgets</h2>
+              <h2 className="text-xl font-semibold">{t('common:budgets')}</h2>
               <Button onClick={handleCreateBudget}>
-                Create Budget
+                {t('budgets:createBudget')}
               </Button>
             </div>
           </div>
@@ -168,13 +170,6 @@ export default function DashboardPage() {
           {budgets.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {budgets.map((budget) => {
-                const monthNames = [
-                  'January', 'February', 'March', 'April', 'May', 'June', 
-                  'July', 'August', 'September', 'October', 'November', 'December'
-                ];
-                
-                const monthName = monthNames[budget.month - 1];
-                
                 return (
                   <div 
                     key={budget.id} 
@@ -185,14 +180,14 @@ export default function DashboardPage() {
                         {budget.name}
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {monthName} {budget.year}
+                        {t(`budgets:month_${budget.month}`)} {budget.year}
                       </p>
                       <div className="mt-4">
                         <Button 
                           variant="secondary"
                           onClick={() => handleViewBudget(budget.id)}
                         >
-                          View Details
+                          {t('budgets:viewDetails')}
                         </Button>
                       </div>
                     </div>
@@ -202,10 +197,10 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-              <p className="text-gray-500 dark:text-gray-400">No budgets yet. Create your first budget!</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('dashboard:noBudgetsYet')}</p>
               <div className="mt-4">
                 <Button onClick={handleCreateBudget}>
-                  Create Budget
+                  {t('budgets:createBudget')}
                 </Button>
               </div>
             </div>
@@ -213,10 +208,10 @@ export default function DashboardPage() {
         </>
       ) : (
         <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No households found. Create your first household!</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('dashboard:noHouseholdsFound')}</p>
           <div className="mt-4">
             <Button onClick={() => router.push('/households/create')}>
-              Create Household
+              {t('households:createHousehold')}
             </Button>
           </div>
         </div>
