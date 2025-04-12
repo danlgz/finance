@@ -13,7 +13,8 @@ const resources = {
     dashboard: enCommon.dashboard,
     budgets: enCommon.budgets,
     households: enCommon.households,
-    profile: enCommon.profile
+    profile: enCommon.profile,
+    expenses: {} // Se cargará dinámicamente
   },
   es: {
     translation: esCommon,
@@ -21,9 +22,27 @@ const resources = {
     dashboard: esCommon.dashboard,
     budgets: esCommon.budgets,
     households: esCommon.households,
-    profile: esCommon.profile
+    profile: esCommon.profile,
+    expenses: {} // Se cargará dinámicamente
   }
 };
+
+// Cargar traducciones de archivos JSON
+try {
+  fetch('/locales/en/expenses.json')
+    .then(response => response.json())
+    .then(data => {
+      resources.en.expenses = data;
+    });
+    
+  fetch('/locales/es/expenses.json')
+    .then(response => response.json())
+    .then(data => {
+      resources.es.expenses = data;
+    });
+} catch (error) {
+  console.error('Error cargando traducciones:', error);
+}
 
 // Inicializar i18n
 i18n
@@ -36,7 +55,7 @@ i18n
     
     // Para permitir acceso tanto a través de namespaces como directamente
     // Esto permite que t('common.dashboard') funcione y también profile.title
-    ns: ['translation', 'common', 'dashboard', 'budgets', 'households', 'profile'],
+    ns: ['translation', 'common', 'dashboard', 'budgets', 'households', 'profile', 'expenses'],
     defaultNS: 'translation',
     
     interpolation: {

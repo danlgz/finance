@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { authOptions } from '../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 
 // Schema for budget creation
 const budgetSchema = z.object({
@@ -13,48 +14,48 @@ const budgetSchema = z.object({
   currency: z.enum(['GTQ', 'USD', 'EUR']).optional(),
 });
 
-// GET - Get all budgets for a household
-export async function GET(request: Request) {
+// GET - Obtener todos los presupuestos
+export async function GET(request: NextRequest) {
   try {
+    // Verificar si el usuario está autenticado
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (!session || !session.user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
+    // Obtener parámetros de consulta
     const { searchParams } = new URL(request.url);
     const householdId = searchParams.get('householdId');
+    const month = searchParams.get('month');
+    const year = searchParams.get('year');
 
-    if (!householdId) {
-      return NextResponse.json(
-        { error: 'Household ID is required' },
-        { status: 400 }
-      );
+    // Construir filtro
+    let filter: any = {
+      userId: session.user.id
+    };
+
+    if (householdId) {
+      filter.householdId = householdId;
+    }
+    
+    if (month) {
+      filter.month = parseInt(month);
+    }
+    
+    if (year) {
+      filter.year = parseInt(year);
     }
 
-    // Check if user has access to this household
-    const userHousehold = await prisma.userHousehold.findFirst({
-      where: {
-        userId: session.user.id,
-        householdId,
-      },
-    });
-
-    if (!userHousehold) {
-      return NextResponse.json(
-        { error: 'You do not have access to this household' },
-        { status: 403 }
-      );
-    }
-
+    // Buscar presupuestos
     const budgets = await prisma.budget.findMany({
-      where: {
-        householdId,
-      },
+      where: filter,
       include: {
+        household: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         categories: {
           include: {
             items: true,
@@ -71,7 +72,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching budgets:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { message: 'Internal Server Error' },
       { status: 500 }
     );
   }
@@ -130,6 +131,7 @@ export async function POST(req: Request) {
         month,
         year,
         householdId,
+        userId: session.user.id,
         currency: currency || 'GTQ',
       },
     });

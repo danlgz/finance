@@ -1,0 +1,21 @@
+{
+  "addExpense": "Add Expense",
+  "expenseDetails": "Expense Details",
+  "fillExpenseInfo": "Fill in the expense information",
+  "selectBudget": "Select budget",
+  "selectCategory": "Select category",
+  "selectItem": "Select item",
+  "descriptionPlaceholder": "Expense description",
+  "pickDate": "Pick a date",
+  "saveExpense": "Save Expense",
+  "expenseCreated": "Expense successfully created",
+  "expenseUpdated": "Expense successfully updated",
+  "expenses": "Expenses",
+  "noExpensesFound": "No expenses found",
+  "descriptionRequired": "Description is required",
+  "amountPositive": "Amount must be positive",
+  "budgetRequired": "Budget is required",
+  "categoryRequired": "Category is required",
+  "itemRequired": "Item is required",
+  "householdRequired": "Household is required"
+} 

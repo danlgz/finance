@@ -9,7 +9,7 @@ import { useTranslate } from '@/hooks/useTranslate';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
-import { CalendarDays, CreditCard, DollarSign, PiggyBank, Plus, ChevronRight } from 'lucide-react';
+import { CalendarDays, CreditCard, DollarSign, PiggyBank, Plus, ChevronRight, PlusCircle } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import React from 'react';
 
@@ -329,13 +329,26 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 relative">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t('dashboard:title')}</h1>
         <p className="text-muted-foreground">
           {t('common:welcome', { name: session?.user?.name || 'User' })}
         </p>
       </div>
+
+      {currentBudget && (
+        <div className="fixed bottom-8 right-8 z-10">
+          <Button 
+            onClick={() => router.push(`/expenses/create?budgetId=${currentBudget.id}`)}
+            size="lg"
+            className="rounded-full h-14 w-14 p-0 shadow-lg"
+          >
+            <PlusCircle className="h-8 w-8" />
+            <span className="sr-only">{t('expenses:addExpense')}</span>
+          </Button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-12 mb-6">
         <div className="md:col-span-6">

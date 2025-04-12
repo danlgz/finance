@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, ChevronRight } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronRight, PlusCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -181,7 +181,7 @@ export default function BudgetDetailsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center gap-2">
         <Button variant="outline" onClick={handleBackClick}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -196,6 +196,17 @@ export default function BudgetDetailsPage() {
             {t('budgets:editBudget')}
           </Button>
         </div>
+      </div>
+
+      <div className="fixed bottom-8 right-8 z-10">
+        <Button 
+          onClick={() => router.push(`/expenses/create?budgetId=${budget.id}`)}
+          size="lg"
+          className="rounded-full h-14 w-14 p-0 shadow-lg"
+        >
+          <PlusCircle className="h-8 w-8" />
+          <span className="sr-only">{t('expenses:addExpense')}</span>
+        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

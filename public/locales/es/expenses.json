@@ -1,0 +1,21 @@
+{
+  "addExpense": "Agregar Gasto",
+  "expenseDetails": "Detalles del Gasto",
+  "fillExpenseInfo": "Complete la información del gasto",
+  "selectBudget": "Seleccionar presupuesto",
+  "selectCategory": "Seleccionar categoría",
+  "selectItem": "Seleccionar elemento",
+  "descriptionPlaceholder": "Descripción del gasto",
+  "pickDate": "Seleccionar fecha",
+  "saveExpense": "Guardar Gasto",
+  "expenseCreated": "Gasto registrado correctamente",
+  "expenseUpdated": "Gasto actualizado correctamente",
+  "expenses": "Gastos",
+  "noExpensesFound": "No se encontraron gastos",
+  "descriptionRequired": "La descripción es obligatoria",
+  "amountPositive": "El monto debe ser positivo",
+  "budgetRequired": "El presupuesto es obligatorio",
+  "categoryRequired": "La categoría es obligatoria",
+  "itemRequired": "El elemento es obligatorio",
+  "householdRequired": "El hogar es obligatorio"
+} 
