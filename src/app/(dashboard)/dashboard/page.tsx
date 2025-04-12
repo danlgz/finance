@@ -1,10 +1,33 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslate } from '@/hooks/useTranslate';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { formatCurrency } from '@/lib/utils';
+import { CalendarDays, CreditCard, DollarSign, PiggyBank, Plus } from 'lucide-react';
+
+interface BudgetItem {
+  id: string;
+  name: string;
+  amount: number;
+  expenses: {
+    id: string;
+    amount: number;
+    description: string;
+    date: string;
+  }[];
+}
+
+interface Category {
+  id: string;
+  name: string;
+  items: BudgetItem[];
+}
 
 interface Budget {
   id: string;
@@ -13,20 +36,33 @@ interface Budget {
   year: number;
   householdId: string;
   currency: string;
-  categories: {
-    id: string;
-    name: string;
-    items: {
-      id: string;
-      name: string;
-      amount: number;
-    }[];
-  }[];
+  categories: Category[];
 }
 
 interface Household {
   id: string;
   name: string;
+}
+
+interface CategoryData {
+  name: string;
+  value: number;
+  spent: number;
+}
+
+interface ExpenseByCategoryData {
+  name: string;
+  budgeted: number;
+  spent: number;
+  remaining: number;
+}
+
+interface BudgetStats {
+  totalBudgeted: number;
+  totalSpent: number;
+  remaining: number;
+  categoryData: CategoryData[];
+  expensesByCategory: ExpenseByCategoryData[];
 }
 
 export default function DashboardPage() {
@@ -35,9 +71,16 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
+  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
   const [households, setHouseholds] = useState<Household[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Get the current date for default selection
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1; // JS months are 0-indexed
+  const currentYear = currentDate.getFullYear();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -84,6 +127,25 @@ export default function DashboardPage() {
           }
           const data = await response.json();
           setBudgets(data);
+          
+          // Find current month's budget, or the most recent one
+          const currentMonthBudget = data.find(
+            (budget: Budget) => budget.month === currentMonth && budget.year === currentYear
+          );
+          
+          // If no budget exists for the current month, get the most recent
+          if (currentMonthBudget) {
+            setSelectedBudgetId(currentMonthBudget.id);
+          } else if (data.length > 0) {
+            // Sort by year then month, descending
+            const sortedBudgets = [...data].sort((a, b) => {
+              if (a.year !== b.year) return b.year - a.year;
+              return b.month - a.month;
+            });
+            setSelectedBudgetId(sortedBudgets[0].id);
+          } else {
+            setSelectedBudgetId(null);
+          }
         } catch (error) {
           console.error('Error fetching budgets:', error);
           setError('Failed to load budgets');
@@ -92,15 +154,96 @@ export default function DashboardPage() {
 
       fetchBudgets();
     }
-  }, [selectedHouseholdId]);
+  }, [selectedHouseholdId, currentMonth, currentYear]);
+
+  // Fetch budget details when a budget is selected
+  useEffect(() => {
+    if (selectedBudgetId) {
+      const fetchBudgetDetails = async () => {
+        try {
+          const response = await fetch(`/api/budgets/${selectedBudgetId}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch budget details');
+          }
+          const data = await response.json();
+          setCurrentBudget(data);
+        } catch (error) {
+          console.error('Error fetching budget details:', error);
+          setError('Failed to load budget details');
+        }
+      };
+
+      fetchBudgetDetails();
+    }
+  }, [selectedBudgetId]);
 
   const handleCreateBudget = () => {
     router.push('/budgets/create');
   };
 
-  const handleViewBudget = (budgetId: string) => {
-    router.push(`/budgets/${budgetId}`);
+  const handleViewBudgetDetails = () => {
+    if (selectedBudgetId) {
+      router.push(`/budgets/${selectedBudgetId}`);
+    }
   };
+
+  const handleEditBudget = () => {
+    if (selectedBudgetId) {
+      router.push(`/budgets/${selectedBudgetId}/edit`);
+    }
+  };
+
+  // Calculate budget statistics
+  const calculateBudgetStats = (): BudgetStats => {
+    if (!currentBudget) return { 
+      totalBudgeted: 0, 
+      totalSpent: 0, 
+      remaining: 0, 
+      categoryData: [], 
+      expensesByCategory: [] 
+    };
+    
+    let totalBudgeted = 0;
+    let totalSpent = 0;
+    const categoryData: CategoryData[] = [];
+    const expensesByCategory: ExpenseByCategoryData[] = [];
+    
+    currentBudget.categories.forEach(category => {
+      const categoryBudgeted = category.items.reduce((sum, item) => sum + item.amount, 0);
+      const categorySpent = category.items.reduce((sum, item) => {
+        return sum + (item.expenses?.reduce((expSum, exp) => expSum + exp.amount, 0) || 0);
+      }, 0);
+      
+      totalBudgeted += categoryBudgeted;
+      totalSpent += categorySpent;
+      
+      categoryData.push({
+        name: category.name,
+        value: categoryBudgeted,
+        spent: categorySpent
+      });
+      
+      expensesByCategory.push({
+        name: category.name,
+        budgeted: categoryBudgeted,
+        spent: categorySpent,
+        remaining: categoryBudgeted - categorySpent
+      });
+    });
+    
+    return {
+      totalBudgeted,
+      totalSpent,
+      remaining: totalBudgeted - totalSpent,
+      categoryData,
+      expensesByCategory
+    };
+  };
+
+  const stats = calculateBudgetStats();
+  
+  // Define colors for charts
+  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28'];
 
   if (status === 'loading' || isLoading) {
     return (
@@ -129,6 +272,35 @@ export default function DashboardPage() {
     );
   }
 
+  if (households.length === 0) {
+    // No households, prompt to create one
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">{t('dashboard:title')}</h1>
+          <p className="text-muted-foreground">
+            {t('common:welcome', { name: session?.user?.name || 'User' })}
+          </p>
+        </div>
+        
+        <Card className="border-dashed">
+          <CardContent className="p-6 text-center">
+            <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+              <PiggyBank className="h-10 w-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">{t('dashboard:noHouseholdsFound')}</h3>
+            <p className="text-muted-foreground mb-4">
+              {t('budgets:needHousehold')}
+            </p>
+            <Button onClick={() => router.push('/households/create')}>
+              {t('households:createHousehold')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -138,83 +310,257 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {households.length > 0 ? (
-        <>
-          <div className="mb-6">
-            <label htmlFor="householdSelect" className="block text-sm font-medium text-foreground">
-              {t('dashboard:selectHousehold')}
-            </label>
-            <select
-              id="householdSelect"
-              value={selectedHouseholdId || ''}
-              onChange={(e) => setSelectedHouseholdId(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-3 pr-10 text-base focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
-            >
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-12 mb-6">
+        <div className="md:col-span-6">
+          <label className="text-sm font-medium text-muted-foreground">{t('dashboard:selectHousehold')}</label>
+          <Select
+            value={selectedHouseholdId || ''}
+            onValueChange={(value) => setSelectedHouseholdId(value)}
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder={t('dashboard:selectHousehold')} />
+            </SelectTrigger>
+            <SelectContent>
               {households.map((household) => (
-                <option key={household.id} value={household.id}>
+                <SelectItem key={household.id} value={household.id}>
                   {household.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-          </div>
-
-          <div className="mb-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">{t('common:budgets')}</h2>
-              <Button onClick={handleCreateBudget}>
-                {t('budgets:createBudget')}
-              </Button>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="md:col-span-6">
+          <label className="text-sm font-medium text-muted-foreground">{t('common:budgets')}</label>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex-1">
+              <Select
+                value={selectedBudgetId || ''}
+                onValueChange={(value) => setSelectedBudgetId(value)}
+                disabled={budgets.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('budgets:selectBudget')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {budgets.map((budget) => (
+                    <SelectItem key={budget.id} value={budget.id}>
+                      {t(`budgets:month_${budget.month}`)} {budget.year} - {budget.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-
-          {budgets.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {budgets.map((budget) => {
-                return (
-                  <div 
-                    key={budget.id} 
-                    className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-card text-card-foreground shadow"
-                  >
-                    <div className="px-4 py-5 sm:p-6">
-                      <h3 className="text-lg font-medium leading-6 text-foreground">
-                        {budget.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {t(`budgets:month_${budget.month}`)} {budget.year}
-                      </p>
-                      <div className="mt-4">
-                        <Button 
-                          variant="secondary"
-                          onClick={() => handleViewBudget(budget.id)}
-                        >
-                          {t('budgets:viewDetails')}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-              <p className="text-gray-500 dark:text-gray-400">{t('dashboard:noBudgetsYet')}</p>
-              <div className="mt-4">
-                <Button onClick={handleCreateBudget}>
-                  {t('budgets:createBudget')}
-                </Button>
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-          <p className="text-gray-500 dark:text-gray-400">{t('dashboard:noHouseholdsFound')}</p>
-          <div className="mt-4">
-            <Button onClick={() => router.push('/households/create')}>
-              {t('households:createHousehold')}
+            <Button onClick={handleCreateBudget} size="icon" variant="outline">
+              <Plus className="h-4 w-4" />
             </Button>
           </div>
         </div>
+      </div>
+
+      {currentBudget ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {t('budgets:totalBudgeted')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t(`budgets:month_${currentBudget.month}`)} {currentBudget.year}
+                  </CardDescription>
+                </div>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(stats.totalBudgeted, currentBudget.currency)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {t('budgets:totalSpent')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('common:currentSpending')}
+                  </CardDescription>
+                </div>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(stats.totalSpent, currentBudget.currency)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {t('budgets:remaining')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('common:availableFunds')}
+                  </CardDescription>
+                </div>
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${stats.remaining < 0 ? 'text-destructive' : 'text-primary'}`}>
+                  {formatCurrency(stats.remaining, currentBudget.currency)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle>{t('dashboard:budgetBreakdown')}</CardTitle>
+                <CardDescription>
+                  {t('dashboard:budgetAllocation')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={stats.categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {stats.categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value, currentBudget.currency)}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle>{t('dashboard:spendingByCategory')}</CardTitle>
+                <CardDescription>
+                  {t('dashboard:budgetedVsSpent')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={stats.expensesByCategory}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value, currentBudget.currency)}
+                    />
+                    <Legend />
+                    <Bar dataKey="budgeted" fill="#8884d8" name={t('budgets:budgeted')} />
+                    <Bar dataKey="spent" fill="#82ca9d" name={t('budgets:spent')} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('budgets:budgetSummary')}</CardTitle>
+              <CardDescription>
+                {t('budgets:overview')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2">{t('budgets:category')}</th>
+                      <th className="text-right py-2">{t('budgets:budgeted')}</th>
+                      <th className="text-right py-2">{t('budgets:spent')}</th>
+                      <th className="text-right py-2">{t('budgets:remaining')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.expensesByCategory.map((category, index) => (
+                      <tr key={index} className="border-b hover:bg-secondary/20">
+                        <td className="py-2">{category.name}</td>
+                        <td className="text-right py-2">{formatCurrency(category.budgeted, currentBudget.currency)}</td>
+                        <td className="text-right py-2">{formatCurrency(category.spent, currentBudget.currency)}</td>
+                        <td className={`text-right py-2 ${category.remaining < 0 ? 'text-destructive' : 'text-primary'}`}>
+                          {formatCurrency(category.remaining, currentBudget.currency)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="font-bold">
+                      <td className="py-2">{t('budgets:total')}</td>
+                      <td className="text-right py-2">{formatCurrency(stats.totalBudgeted, currentBudget.currency)}</td>
+                      <td className="text-right py-2">{formatCurrency(stats.totalSpent, currentBudget.currency)}</td>
+                      <td className={`text-right py-2 ${stats.remaining < 0 ? 'text-destructive' : 'text-primary'}`}>
+                        {formatCurrency(stats.remaining, currentBudget.currency)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleViewBudgetDetails}>
+                {t('budgets:viewDetails')}
+              </Button>
+              <Button onClick={handleEditBudget}>
+                {t('budgets:editBudget')}
+              </Button>
+            </CardFooter>
+          </Card>
+        </>
+      ) : budgets.length > 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <PiggyBank className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">{t('dashboard:selectBudgetPrompt')}</h3>
+            <p className="text-muted-foreground mb-4">
+              {t('dashboard:selectBudgetToView')}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-dashed">
+          <CardContent className="p-6 text-center">
+            <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+              <PiggyBank className="h-10 w-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">{t('dashboard:noBudgetsYet')}</h3>
+            <p className="text-muted-foreground mb-4">
+              {t('dashboard:createBudgetPrompt')}
+            </p>
+            <Button onClick={handleCreateBudget}>
+              {t('budgets:createBudget')}
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

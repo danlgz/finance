@@ -25,13 +25,22 @@
     "currency": "Moneda",
     "month": "Mes",
     "year": "Año",
-    "household": "Hogar"
+    "household": "Hogar",
+    "currentSpending": "Gasto actual",
+    "availableFunds": "Fondos disponibles"
   },
   "dashboard": {
     "title": "Panel",
     "selectHousehold": "Seleccionar Hogar",
     "noBudgetsYet": "Aún no hay presupuestos. ¡Crea tu primer presupuesto!",
-    "noHouseholdsFound": "No se encontraron hogares. ¡Crea tu primer hogar!"
+    "noHouseholdsFound": "No se encontraron hogares. ¡Crea tu primer hogar!",
+    "budgetBreakdown": "Desglose del Presupuesto",
+    "budgetAllocation": "Cómo se distribuye tu presupuesto entre categorías",
+    "spendingByCategory": "Gastos por Categoría",
+    "budgetedVsSpent": "Comparación de montos presupuestados vs gastados",
+    "selectBudgetPrompt": "Selecciona un presupuesto para ver",
+    "selectBudgetToView": "Por favor selecciona un presupuesto del menú desplegable para ver sus detalles",
+    "createBudgetPrompt": "Crea tu primer presupuesto para comenzar a llevar el control de tus finanzas"
   },
   "budgets": {
     "title": "Tus Presupuestos",
@@ -39,6 +48,7 @@
     "viewDetails": "Ver Detalles",
     "editBudget": "Editar Presupuesto",
     "selectHousehold": "Seleccionar Hogar",
+    "selectBudget": "Seleccionar Presupuesto",
     "needHousehold": "Necesitas crear un hogar primero antes de crear presupuestos.",
     "createHousehold": "Crear Hogar",
     "budgetList": "Lista de Presupuestos",

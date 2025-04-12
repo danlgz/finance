@@ -25,13 +25,22 @@
     "currency": "Currency",
     "month": "Month",
     "year": "Year",
-    "household": "Household"
+    "household": "Household",
+    "currentSpending": "Current spending",
+    "availableFunds": "Available funds"
   },
   "dashboard": {
     "title": "Dashboard",
     "selectHousehold": "Select Household",
     "noBudgetsYet": "No budgets yet. Create your first budget!",
-    "noHouseholdsFound": "No households found. Create your first household!"
+    "noHouseholdsFound": "No households found. Create your first household!",
+    "budgetBreakdown": "Budget Breakdown",
+    "budgetAllocation": "How your budget is allocated across categories",
+    "spendingByCategory": "Spending by Category",
+    "budgetedVsSpent": "Comparison of budgeted vs spent amounts",
+    "selectBudgetPrompt": "Select a budget to view",
+    "selectBudgetToView": "Please select a budget from the dropdown to view its details",
+    "createBudgetPrompt": "Create your first budget to start tracking your finances"
   },
   "budgets": {
     "title": "Your Budgets",
@@ -39,6 +48,7 @@
     "viewDetails": "View Details",
     "editBudget": "Edit Budget",
     "selectHousehold": "Select Household",
+    "selectBudget": "Select Budget",
     "needHousehold": "You need to create a household first before creating budgets.",
     "createHousehold": "Create Household",
     "budgetList": "Budget List",
