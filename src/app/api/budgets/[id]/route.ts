@@ -71,9 +71,13 @@ export async function GET(
       },
     });
 
+    // Calculate total income amount
+    const incomeAmount = income.reduce((total, item) => total + item.amount, 0);
+
     return NextResponse.json({
       ...budget,
       incomeData: income,
+      incomeAmount
     });
   } catch (error) {
     console.error('Error fetching budget:', error);

@@ -54,7 +54,36 @@ export default function BudgetDetailsPage() {
         }
         
         const data = await response.json();
-        setBudget(data);
+        
+        // Transform the API response to match our component's expected structure
+        const transformedCategories = data.categories.map((category: any) => {
+          // Calculate the total budgeted amount from all items
+          const budgetedAmount = category.items.reduce((sum: number, item: any) => sum + item.amount, 0);
+          
+          // Flatten all expenses from items
+          const expenses = category.items.flatMap((item: any) => 
+            item.expenses.map((expense: any) => ({
+              ...expense,
+              categoryId: category.id
+            }))
+          );
+          
+          return {
+            id: category.id,
+            name: category.name,
+            budgetedAmount,
+            expenses
+          };
+        });
+        
+        setBudget({
+          id: data.id,
+          month: data.month,
+          year: data.year,
+          household: data.household,
+          categories: transformedCategories,
+          incomeAmount: data.incomeAmount || 0
+        });
       } catch (err) {
         console.error("Error fetching budget:", err);
         setError("Failed to load budget details");
