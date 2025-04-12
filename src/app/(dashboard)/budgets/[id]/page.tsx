@@ -27,6 +27,7 @@ interface Budget {
   id: string;
   month: number;
   year: number;
+  currency: string;
   household: {
     id: string;
     name: string;
@@ -80,6 +81,7 @@ export default function BudgetDetailsPage() {
           id: data.id,
           month: data.month,
           year: data.year,
+          currency: data.currency || 'USD',
           household: data.household,
           categories: transformedCategories,
           incomeAmount: data.incomeAmount || 0
@@ -116,6 +118,11 @@ export default function BudgetDetailsPage() {
 
   const calculateRemaining = () => {
     return budget?.incomeAmount ? budget.incomeAmount - calculateTotalBudgeted() : 0;
+  };
+
+  // Helper function to format currency using the budget's currency
+  const formatBudgetCurrency = (amount: number) => {
+    return formatCurrency(amount, budget?.currency || 'USD');
   };
 
   if (loading) {
@@ -171,7 +178,7 @@ export default function BudgetDetailsPage() {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="font-medium">{t('budgets:totalBudget')}:</span>
-              <span className="font-bold">{formatCurrency(budget.incomeAmount)}</span>
+              <span className="font-bold">{formatBudgetCurrency(budget.incomeAmount)}</span>
             </div>
 
             {budget.categories && budget.categories.length > 0 ? (
@@ -181,7 +188,7 @@ export default function BudgetDetailsPage() {
                   {budget.categories.map((category) => (
                     <div key={category.id} className="flex justify-between items-center p-2 bg-secondary/20 rounded-md">
                       <span>{category.name}</span>
-                      <span>{formatCurrency(category.budgetedAmount)}</span>
+                      <span>{formatBudgetCurrency(category.budgetedAmount)}</span>
                     </div>
                   ))}
                 </div>
@@ -205,7 +212,7 @@ export default function BudgetDetailsPage() {
                 <div className="flex justify-between items-center">
                   <span className="font-medium">{t('budgets:totalIncome')}:</span>
                   <span className="font-bold">
-                    {formatCurrency(budget.incomeAmount)}
+                    {formatBudgetCurrency(budget.incomeAmount)}
                   </span>
                 </div>
               </div>
@@ -222,7 +229,7 @@ export default function BudgetDetailsPage() {
             <CardTitle>{t('budgets:totalBudgeted')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(calculateTotalBudgeted())}</p>
+            <p className="text-2xl font-bold">{formatBudgetCurrency(calculateTotalBudgeted())}</p>
           </CardContent>
         </Card>
 
@@ -231,7 +238,7 @@ export default function BudgetDetailsPage() {
             <CardTitle>{t('budgets:totalSpent')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(calculateTotalExpenses())}</p>
+            <p className="text-2xl font-bold">{formatBudgetCurrency(calculateTotalExpenses())}</p>
           </CardContent>
         </Card>
 
@@ -241,7 +248,7 @@ export default function BudgetDetailsPage() {
           </CardHeader>
           <CardContent>
             <p className={`text-2xl font-bold ${calculateRemaining() < 0 ? 'text-destructive' : 'text-primary'}`}>
-              {formatCurrency(calculateRemaining())}
+              {formatBudgetCurrency(calculateRemaining())}
             </p>
           </CardContent>
         </Card>
@@ -271,10 +278,10 @@ export default function BudgetDetailsPage() {
                   return (
                     <tr key={category.id} className="border-b hover:bg-secondary/20">
                       <td className="py-2">{category.name}</td>
-                      <td className="text-right py-2">{formatCurrency(category.budgetedAmount)}</td>
-                      <td className="text-right py-2">{formatCurrency(totalExpenses)}</td>
+                      <td className="text-right py-2">{formatBudgetCurrency(category.budgetedAmount)}</td>
+                      <td className="text-right py-2">{formatBudgetCurrency(totalExpenses)}</td>
                       <td className={`text-right py-2 ${remaining < 0 ? 'text-destructive' : 'text-primary'}`}>
-                        {formatCurrency(remaining)}
+                        {formatBudgetCurrency(remaining)}
                       </td>
                     </tr>
                   );
@@ -283,9 +290,9 @@ export default function BudgetDetailsPage() {
               <tfoot>
                 <tr className="font-bold">
                   <td className="py-2">{t('budgets:total')}</td>
-                  <td className="text-right py-2">{formatCurrency(calculateTotalBudgeted())}</td>
-                  <td className="text-right py-2">{formatCurrency(calculateTotalExpenses())}</td>
-                  <td className="text-right py-2">{formatCurrency(calculateTotalBudgeted() - calculateTotalExpenses())}</td>
+                  <td className="text-right py-2">{formatBudgetCurrency(calculateTotalBudgeted())}</td>
+                  <td className="text-right py-2">{formatBudgetCurrency(calculateTotalExpenses())}</td>
+                  <td className="text-right py-2">{formatBudgetCurrency(calculateTotalBudgeted() - calculateTotalExpenses())}</td>
                 </tr>
               </tfoot>
             </table>
@@ -298,7 +305,7 @@ export default function BudgetDetailsPage() {
           <CardHeader>
             <CardTitle>{category.name}</CardTitle>
             <CardDescription>
-              {t('budgets:budgeted')}: {formatCurrency(category.budgetedAmount)}
+              {t('budgets:budgeted')}: {formatBudgetCurrency(category.budgetedAmount)}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -317,7 +324,7 @@ export default function BudgetDetailsPage() {
                       <tr key={expense.id} className="border-b hover:bg-secondary/20">
                         <td className="py-2">{new Date(expense.date).toLocaleDateString()}</td>
                         <td className="py-2">{expense.description}</td>
-                        <td className="text-right py-2">{formatCurrency(expense.amount)}</td>
+                        <td className="text-right py-2">{formatBudgetCurrency(expense.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
