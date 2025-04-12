@@ -10,7 +10,10 @@
     "services:up": "docker-compose up -d",
     "services:down": "docker-compose down",
     "services:reset": "docker-compose down -v && docker-compose up -d",
-    "services:logs": "docker-compose logs -f"
+    "services:logs": "docker-compose logs -f",
+    "prisma:studio": "prisma studio",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

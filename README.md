@@ -59,7 +59,7 @@ A Next.js application for managing personal finances, budgets, and expenses.
 
 5. Set up the database:
    ```bash
-   npx prisma migrate dev --name init
+   npm run prisma:migrate
    ```
 
 6. Start the development server:
@@ -89,6 +89,28 @@ A Next.js application for managing personal finances, budgets, and expenses.
 - Reset all services (removes data volumes and restarts):
   ```bash
   npm run services:reset
+  ```
+
+### Database Management with Prisma
+
+- View and manage database with Prisma Studio:
+  ```bash
+  npm run prisma:studio
+  ```
+
+- Apply database migrations:
+  ```bash
+  npm run prisma:migrate
+  ```
+
+- Generate Prisma Client after schema changes:
+  ```bash
+  npm run prisma:generate
+  ```
+
+- Create a new migration after schema changes:
+  ```bash
+  npm run prisma:migrate -- --name <migration_name>
   ```
 
 ## Project Structure
