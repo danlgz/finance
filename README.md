@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal Finance Management App
+
+A Next.js application for managing personal finances, budgets, and expenses.
+
+## Features
+
+- User registration and authentication
+- Create and manage households
+- Create monthly budgets with categories and expense items
+- Track expenses against budgets
+- Record income by categories
+- Dashboard with financial overview and insights
+- Multi-currency support (currently GTQ with planned expansion)
+- Budget duplication from previous months
+- Invite household members to share budgets
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Authentication**: NextAuth.js
+- **Database**: PostgreSQL with Prisma ORM
+- **Styling**: Tailwind CSS
+- **State Management**: React Hooks
+- **Charting**: Recharts (for dashboard visualizations)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+ and npm/yarn
+- PostgreSQL database
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd finance-app
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. Set up your environment variables:
+   Copy the `.env.example` file to `.env.local` and update the values:
+   ```
+   DATABASE_URL="postgresql://username:password@localhost:5432/financeapp?schema=public"
+   NEXTAUTH_SECRET="your-secret-key"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Set up the database:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+6. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `/src/app/(auth)` - Authentication pages (login, register)
+- `/src/app/(dashboard)` - Protected dashboard pages
+- `/src/app/api` - API routes for data operations
+- `/src/components` - Reusable UI components
+- `/src/lib` - Utility functions and libraries
+- `/prisma` - Database schema and migrations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+This project is licensed under the MIT License.
+
+## Acknowledgements
+
+- Next.js team for the amazing framework
+- Prisma team for the ORM
+- All open-source libraries and tools used in this project
