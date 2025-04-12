@@ -145,9 +145,9 @@ export async function PUT(
     }
 
     // Update the budget in a transaction
-    const result = await prisma.$transaction(async (tx: PrismaClient) => {
+    const result = await prisma.$transaction(async (prismaClient) => {
       // 1. Update basic budget info
-      const updatedBudget = await tx.budget.update({
+      const updatedBudget = await prismaClient.budget.update({
         where: { id: budgetId },
         data: {
           name: data.name,
@@ -160,14 +160,14 @@ export async function PUT(
 
       // 2. Process categories and items
       // First, get existing categories to determine which to delete
-      const existingCategories = await tx.expenseCategory.findMany({
+      const existingCategories = await prismaClient.category.findMany({
         where: { budgetId },
         include: { items: true },
       });
 
       // Create a map of existing categories by ID
       const existingCategoryMap = new Map(
-        existingCategories.map((cat: { id: string }) => [cat.id, cat])
+        existingCategories.map((cat) => [cat.id, cat])
       );
 
       // Process each category in the request
@@ -176,7 +176,7 @@ export async function PUT(
 
         if (category.id) {
           // Update existing category
-          const updatedCategory = await tx.expenseCategory.update({
+          const updatedCategory = await prismaClient.category.update({
             where: { id: category.id },
             data: { name: category.name },
           });
@@ -186,7 +186,7 @@ export async function PUT(
           existingCategoryMap.delete(category.id);
         } else {
           // Create new category
-          const newCategory = await tx.expenseCategory.create({
+          const newCategory = await prismaClient.category.create({
             data: {
               name: category.name,
               budgetId,
@@ -198,21 +198,21 @@ export async function PUT(
 
         // Get existing items for this category to determine which to delete
         const existingItems = category.id
-          ? await tx.expenseItem.findMany({
+          ? await prismaClient.expenseItem.findMany({
               where: { categoryId: category.id },
             })
           : [];
 
         // Create a map of existing items by ID
         const existingItemMap = new Map(
-          existingItems.map((item: { id: string }) => [item.id, item])
+          existingItems.map((item) => [item.id, item])
         );
 
         // Process each item in the category
         for (const item of category.items) {
           if (item.id) {
             // Update existing item
-            await tx.expenseItem.update({
+            await prismaClient.expenseItem.update({
               where: { id: item.id },
               data: {
                 name: item.name,
@@ -224,7 +224,7 @@ export async function PUT(
             existingItemMap.delete(item.id);
           } else {
             // Create new item
-            await tx.expenseItem.create({
+            await prismaClient.expenseItem.create({
               data: {
                 name: item.name,
                 amount: item.amount,
@@ -237,7 +237,7 @@ export async function PUT(
 
         // Delete items that weren't in the request
         for (const itemId of existingItemMap.keys()) {
-          await tx.expenseItem.delete({
+          await prismaClient.expenseItem.delete({
             where: { id: itemId },
           });
         }
@@ -246,12 +246,12 @@ export async function PUT(
       // Delete categories that weren't in the request
       for (const categoryId of existingCategoryMap.keys()) {
         // Delete all items first (cascade not handled automatically in Prisma)
-        await tx.expenseItem.deleteMany({
+        await prismaClient.expenseItem.deleteMany({
           where: { categoryId },
         });
 
         // Then delete the category
-        await tx.expenseCategory.delete({
+        await prismaClient.category.delete({
           where: { id: categoryId },
         });
       }
