@@ -209,7 +209,7 @@ export default function BudgetDetailsPage() {
             <CardTitle>Remaining to Budget</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className={`text-2xl font-bold ${calculateRemaining() < 0 ? 'text-red-500' : 'text-green-500'}`}>
+            <p className={`text-2xl font-bold ${calculateRemaining() < 0 ? 'text-destructive' : 'text-primary'}`}>
               {formatCurrency(calculateRemaining())}
             </p>
           </CardContent>
@@ -238,11 +238,11 @@ export default function BudgetDetailsPage() {
                   const remaining = category.budgetedAmount - totalExpenses;
                   
                   return (
-                    <tr key={category.id} className="border-b hover:bg-gray-50">
+                    <tr key={category.id} className="border-b hover:bg-secondary/20">
                       <td className="py-2">{category.name}</td>
                       <td className="text-right py-2">{formatCurrency(category.budgetedAmount)}</td>
                       <td className="text-right py-2">{formatCurrency(totalExpenses)}</td>
-                      <td className={`text-right py-2 ${remaining < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                      <td className={`text-right py-2 ${remaining < 0 ? 'text-destructive' : 'text-primary'}`}>
                         {formatCurrency(remaining)}
                       </td>
                     </tr>
@@ -286,7 +286,7 @@ export default function BudgetDetailsPage() {
                     </thead>
                     <tbody>
                       {category.expenses.map((expense) => (
-                        <tr key={expense.id} className="border-b hover:bg-gray-50">
+                        <tr key={expense.id} className="border-b hover:bg-secondary/20">
                           <td className="py-2">{new Date(expense.date).toLocaleDateString()}</td>
                           <td className="py-2">{expense.description}</td>
                           <td className="text-right py-2">{formatCurrency(expense.amount)}</td>
@@ -296,7 +296,7 @@ export default function BudgetDetailsPage() {
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500">No expenses recorded for this category.</p>
+                <p className="text-muted-foreground">No expenses recorded for this category.</p>
               )}
             </CardContent>
             <CardFooter className="flex justify-end">
