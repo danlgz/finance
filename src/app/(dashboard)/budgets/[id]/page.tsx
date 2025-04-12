@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslate } from "@/hooks/useTranslate";
 
 interface Expense {
   id: string;
@@ -35,6 +36,7 @@ interface Budget {
 }
 
 export default function BudgetDetailsPage() {
+  const { t } = useTranslate();
   const params = useParams();
   const router = useRouter();
   const [budget, setBudget] = useState<Budget | null>(null);
@@ -100,11 +102,11 @@ export default function BudgetDetailsPage() {
       <div className="space-y-4">
         <Button variant="outline" onClick={handleBackClick}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t('common:back')}
         </Button>
         <Card>
           <CardContent className="flex items-center justify-center h-60">
-            <p className="text-muted-foreground">{error || "Budget not found"}</p>
+            <p className="text-muted-foreground">{error || t('common:error')}</p>
           </CardContent>
         </Card>
       </div>
@@ -116,15 +118,15 @@ export default function BudgetDetailsPage() {
       <div className="flex items-center gap-2">
         <Button variant="outline" onClick={handleBackClick}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t('common:back')}
         </Button>
-        <h1 className="text-3xl font-bold">{budget.household.name} Budget - {new Date(budget.year, budget.month - 1).toLocaleString('default', { month: 'long' })} {budget.year}</h1>
+        <h1 className="text-3xl font-bold">{budget.household.name} {t('common:budgets')} - {t(`budgets:month_${budget.month}`)} {budget.year}</h1>
         <div className="ml-auto">
           <Button 
             variant="outline"
             onClick={() => router.push(`/budgets/${budget.id}/edit`)}
           >
-            Edit Budget
+            {t('budgets:editBudget')}
           </Button>
         </div>
       </div>
@@ -132,20 +134,20 @@ export default function BudgetDetailsPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Budget Details</CardTitle>
+            <CardTitle>{t('budgets:totalBudget')}</CardTitle>
             <CardDescription>
-              {budget.month}/{budget.year} for {budget.household.name}
+              {budget.month}/{budget.year} {t('common:for')} {budget.household.name}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="font-medium">Total Budget:</span>
+              <span className="font-medium">{t('budgets:totalBudget')}:</span>
               <span className="font-bold">{formatCurrency(budget.incomeAmount)}</span>
             </div>
 
             {budget.categories && budget.categories.length > 0 ? (
               <div className="space-y-2">
-                <h3 className="font-semibold">Categories</h3>
+                <h3 className="font-semibold">{t('budgets:categories')}</h3>
                 <div className="space-y-2">
                   {budget.categories.map((category) => (
                     <div key={category.id} className="flex justify-between items-center p-2 bg-secondary/20 rounded-md">
@@ -156,30 +158,30 @@ export default function BudgetDetailsPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">No categories defined</p>
+              <p className="text-muted-foreground">{t('budgets:noCategoriesDefined')}</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Income Summary</CardTitle>
+            <CardTitle>{t('budgets:incomeSummary')}</CardTitle>
             <CardDescription>
-              For the same period ({budget.month}/{budget.year})
+              {t('budgets:forPeriod', { month: budget.month, year: budget.year })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {budget.incomeAmount > 0 ? (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Total Income:</span>
+                  <span className="font-medium">{t('budgets:totalIncome')}:</span>
                   <span className="font-bold">
                     {formatCurrency(budget.incomeAmount)}
                   </span>
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">No income registered for this period</p>
+              <p className="text-muted-foreground">{t('budgets:noIncomeRegistered')}</p>
             )}
           </CardContent>
         </Card>
@@ -188,7 +190,7 @@ export default function BudgetDetailsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Total Budgeted</CardTitle>
+            <CardTitle>{t('budgets:totalBudgeted')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{formatCurrency(calculateTotalBudgeted())}</p>
@@ -197,7 +199,7 @@ export default function BudgetDetailsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Total Spent</CardTitle>
+            <CardTitle>{t('budgets:totalSpent')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{formatCurrency(calculateTotalExpenses())}</p>
@@ -206,7 +208,7 @@ export default function BudgetDetailsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Remaining to Budget</CardTitle>
+            <CardTitle>{t('budgets:remainingToBudget')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className={`text-2xl font-bold ${calculateRemaining() < 0 ? 'text-destructive' : 'text-primary'}`}>
@@ -218,18 +220,18 @@ export default function BudgetDetailsPage() {
 
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Budget Summary</CardTitle>
-          <CardDescription>Overview of your budget categories and expenses</CardDescription>
+          <CardTitle>{t('budgets:budgetSummary')}</CardTitle>
+          <CardDescription>{t('budgets:overview')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2">Category</th>
-                  <th className="text-right py-2">Budgeted</th>
-                  <th className="text-right py-2">Spent</th>
-                  <th className="text-right py-2">Remaining</th>
+                  <th className="text-left py-2">{t('budgets:category')}</th>
+                  <th className="text-right py-2">{t('budgets:budgeted')}</th>
+                  <th className="text-right py-2">{t('budgets:spent')}</th>
+                  <th className="text-right py-2">{t('budgets:remaining')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,7 +253,7 @@ export default function BudgetDetailsPage() {
               </tbody>
               <tfoot>
                 <tr className="font-bold">
-                  <td className="py-2">Total</td>
+                  <td className="py-2">{t('budgets:total')}</td>
                   <td className="text-right py-2">{formatCurrency(calculateTotalBudgeted())}</td>
                   <td className="text-right py-2">{formatCurrency(calculateTotalExpenses())}</td>
                   <td className="text-right py-2">{formatCurrency(calculateTotalBudgeted() - calculateTotalExpenses())}</td>
@@ -262,51 +264,42 @@ export default function BudgetDetailsPage() {
         </CardContent>
       </Card>
 
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Category Details</h2>
-        {budget.categories.map((category) => (
-          <Card key={category.id}>
-            <CardHeader>
-              <CardTitle>{category.name}</CardTitle>
-              <CardDescription>
-                {formatCurrency(category.budgetedAmount)} budgeted | 
-                {formatCurrency(category.expenses.reduce((sum, expense) => sum + expense.amount, 0))} spent
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {category.expenses.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2">Date</th>
-                        <th className="text-left py-2">Description</th>
-                        <th className="text-right py-2">Amount</th>
+      {budget.categories.map((category) => (
+        <Card key={category.id} className="mb-6">
+          <CardHeader>
+            <CardTitle>{category.name}</CardTitle>
+            <CardDescription>
+              {t('budgets:budgeted')}: {formatCurrency(category.budgetedAmount)}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {category.expenses.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2">{t('common:date')}</th>
+                      <th className="text-left py-2">{t('common:description')}</th>
+                      <th className="text-right py-2">{t('common:amount')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {category.expenses.map((expense) => (
+                      <tr key={expense.id} className="border-b hover:bg-secondary/20">
+                        <td className="py-2">{new Date(expense.date).toLocaleDateString()}</td>
+                        <td className="py-2">{expense.description}</td>
+                        <td className="text-right py-2">{formatCurrency(expense.amount)}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {category.expenses.map((expense) => (
-                        <tr key={expense.id} className="border-b hover:bg-secondary/20">
-                          <td className="py-2">{new Date(expense.date).toLocaleDateString()}</td>
-                          <td className="py-2">{expense.description}</td>
-                          <td className="text-right py-2">{formatCurrency(expense.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">No expenses recorded for this category.</p>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button variant="outline" onClick={() => router.push(`/expenses/new?categoryId=${category.id}`)}>
-                Add Expense
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">{t('budgets:noExpensesRecorded')}</p>
+            )}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 } 
