@@ -1,0 +1,12 @@
+{
+  "title": "Perfil",
+  "personalInfo": "Información Personal",
+  "name": "Nombre",
+  "email": "Correo electrónico",
+  "language": "Idioma",
+  "updateProfile": "Actualizar Perfil",
+  "languages": {
+    "en": "Inglés",
+    "es": "Español"
+  }
+} 

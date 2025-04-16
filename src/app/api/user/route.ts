@@ -24,6 +24,7 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
+        language: true,
         createdAt: true,
         households: {
           include: {
@@ -66,7 +67,7 @@ export async function PATCH(request: NextRequest) {
     const { name, email, currentPassword, newPassword } = data;
 
     // Validate data
-    const updates: any = {};
+    const updates: { name?: string; email?: string; password?: string } = {};
     
     if (name) {
       updates.name = name;
