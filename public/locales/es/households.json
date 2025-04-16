@@ -1,0 +1,16 @@
+{
+  "title": "Hogares",
+  "createHousehold": "Crear Hogar",
+  "members": "Miembros",
+  "member": "miembro",
+  "members_plural": "miembros",
+  "viewDetails": "Ver Detalles",
+  "inviteMember": "Invitar Miembro",
+  "noHouseholdsFound": "No se encontraron hogares",
+  "createHouseholdToStart": "Crea un hogar para comenzar",
+  "householdName": "Nombre del Hogar",
+  "role": "Rol",
+  "owner": "Propietario",
+  "admin": "Administrador",
+  "member_role": "Miembro"
+} 

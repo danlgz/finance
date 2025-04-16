@@ -191,7 +191,7 @@ export default function HouseholdsPage() {
         </DragDropContext>
       ) : (
         <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-          <p className="text-gray-500 dark:text-gray-400">{t('dashboard:noHouseholdsFound')}</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('households:noHouseholdsFound')}</p>
           <div className="mt-4">
             <Button onClick={handleCreateHousehold}>{t('households:createHousehold')}</Button>
           </div>

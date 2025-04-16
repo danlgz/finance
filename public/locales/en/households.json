@@ -1,0 +1,16 @@
+{
+  "title": "Households",
+  "createHousehold": "Create Household",
+  "members": "Members",
+  "member": "member",
+  "members_plural": "members",
+  "viewDetails": "View Details",
+  "inviteMember": "Invite Member",
+  "noHouseholdsFound": "No households found",
+  "createHouseholdToStart": "Create a household to get started",
+  "householdName": "Household Name",
+  "role": "Role",
+  "owner": "Owner",
+  "admin": "Administrator",
+  "member_role": "Member"
+} 
