@@ -119,8 +119,25 @@ export default function DashboardPage() {
         if (!response.ok) throw new Error('Failed to fetch budgets');
         const data = await response.json();
         setBudgets(data);
-        if (data.length > 0) {
-          setSelectedBudgetId(data[0].id);
+        
+        // Find current month and year budget
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
+        const currentYear = currentDate.getFullYear();
+        
+        const currentBudget = data.find(
+          (budget: Budget) => budget.month === currentMonth && budget.year === currentYear
+        );
+        
+        if (currentBudget) {
+          setSelectedBudgetId(currentBudget.id);
+        } else if (data.length > 0) {
+          // If no current month budget, select the most recent one
+          const sortedBudgets = [...data].sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.month - a.month;
+          });
+          setSelectedBudgetId(sortedBudgets[0].id);
         }
       } catch {
         setError('Failed to load budgets');
