@@ -176,7 +176,7 @@ export default function BudgetDetailsPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t('common:back')}
         </Button>
-        <h1 className="text-3xl font-bold">{budget.household.name} {t('common:budgets')} - {t(`budgets:month_${budget.month}`)} {budget.year}</h1>
+        <h1 className="text-3xl font-bold">{budget.household.name} - {t(`budgets:month_${budget.month}`)} {budget.year}</h1>
         <div className="ml-auto">
           <Button 
             variant="outline"

@@ -42,9 +42,38 @@ export async function GET() {
           },
         },
       },
+      orderBy: {
+        users: {
+          _count: 'asc'
+        }
+      }
     });
 
-    return NextResponse.json(households);
+    // Sort households based on the user's order preference
+    const sortedHouseholds = await Promise.all(
+      households.map(async (household) => {
+        const userHousehold = await prisma.userHousehold.findFirst({
+          where: {
+            householdId: household.id,
+            userId: session.user.id,
+          },
+          select: {
+            order: true,
+          },
+        });
+        return {
+          ...household,
+          userOrder: userHousehold?.order || 0,
+        };
+      })
+    );
+
+    sortedHouseholds.sort((a, b) => a.userOrder - b.userOrder);
+
+    // Remove the temporary userOrder field before sending the response
+    const cleanedHouseholds = sortedHouseholds.map(({ userOrder, ...household }) => household);
+
+    return NextResponse.json(cleanedHouseholds);
   } catch (error) {
     console.error('Error fetching households:', error);
     return NextResponse.json(

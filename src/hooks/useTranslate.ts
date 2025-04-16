@@ -7,7 +7,7 @@ export function useTranslate() {
   const { language, changeLanguage } = useContext(I18nContext);
   
   // Función para traducir textos con variables
-  const translate = (key: string, options?: Record<string, any>) => {
+  const translate = (key: string, options?: Record<string, string | number>) => {
     return t(key, options);
   };
   
