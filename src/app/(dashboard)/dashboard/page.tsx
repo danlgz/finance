@@ -403,6 +403,14 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">{t('budgets:selectBudgetToView')}</p>
         </div>
       )}
+
+      <Button
+        className="fixed bottom-4 right-4 shadow-lg"
+        onClick={() => router.push(`/expenses/create?budgetId=${selectedBudgetId}`)}
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        {t('expenses:addExpense')}
+      </Button>
     </div>
   );
 }

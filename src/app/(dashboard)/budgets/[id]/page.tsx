@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, PlusCircle } from "lucide-react";
+import { Loader2, ArrowLeft, Plus } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useTranslate } from "@/hooks/useTranslate";
 import React from "react";
@@ -187,14 +187,13 @@ export default function BudgetDetailsPage() {
         </div>
       </div>
 
-      <div className="fixed bottom-8 right-8 z-10">
+      <div className="fixed bottom-4 right-4">
         <Button 
           onClick={() => router.push(`/expenses/create?budgetId=${budget.id}`)}
-          size="lg"
-          className="rounded-full h-14 w-14 p-0 shadow-lg"
+          className="shadow-lg"
         >
-          <PlusCircle className="h-8 w-8" />
-          <span className="sr-only">{t('expenses:addExpense')}</span>
+          <Plus className="mr-2 h-4 w-4" />
+          {t('expenses:addExpense')}
         </Button>
       </div>
 
