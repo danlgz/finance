@@ -41,5 +41,10 @@
   "expense": "Gasto",
   "expenses": "Gastos",
   "income": "Ingreso",
-  "incomes": "Ingresos"
+  "incomes": "Ingresos",
+  "dashboard": "Panel de Control",
+  "expenses_by_category": "Gastos por Categoría",
+  "budget_breakdown": "Desglose del Presupuesto",
+  "budgeted": "Presupuestado",
+  "spent": "Gastado"
 } 
