@@ -1,7 +1,7 @@
 {
   "welcome": "Bienvenido, {{name}}",
   "loading": "Cargando...",
-  "error": "Ha ocurrido un error",
+  "error": "Error",
   "errorFetchingData": "Error al cargar los datos",
   "errorSavingData": "Error al guardar los datos",
   "back": "Volver",
@@ -42,9 +42,11 @@
   "expenses": "Gastos",
   "income": "Ingreso",
   "incomes": "Ingresos",
-  "dashboard": "Panel de Control",
+  "dashboard": "Panel Principal",
   "expenses_by_category": "Gastos por Categoría",
   "budget_breakdown": "Desglose del Presupuesto",
   "budgeted": "Presupuestado",
-  "spent": "Gastado"
+  "spent": "Gastado",
+  "selectHousehold": "Seleccionar Hogar",
+  "selectBudget": "Seleccionar Presupuesto"
 } 

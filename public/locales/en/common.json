@@ -1,7 +1,7 @@
 {
   "welcome": "Welcome, {{name}}",
   "loading": "Loading...",
-  "error": "An error has occurred",
+  "error": "Error",
   "errorFetchingData": "Error loading data",
   "errorSavingData": "Error saving data",
   "back": "Back",
@@ -41,5 +41,8 @@
   "expense": "Expense",
   "expenses": "Expenses",
   "income": "Income",
-  "incomes": "Incomes"
+  "incomes": "Incomes",
+  "dashboard": "Dashboard",
+  "selectHousehold": "Select Household",
+  "selectBudget": "Select Budget"
 } 

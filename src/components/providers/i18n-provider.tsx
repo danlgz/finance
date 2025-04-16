@@ -20,32 +20,21 @@ export default function I18nProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation(['common', 'dashboard', 'budgets', 'households', 'profile', 'expenses']);
   const { data: session, update: updateSession } = useSession();
   const [language, setLanguage] = useState<string>(i18n.language || 'en');
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Inicializar i18n al cargar el componente
   useEffect(() => {
-    if (!isInitialized) {
-      // Establecer idioma predeterminado si no está definido
-      if (!i18n.language || i18n.language === 'dev') {
-        i18n.changeLanguage('en').then(() => {
-          setLanguage('en');
-          setIsInitialized(true);
-        });
-      } else {
-        setIsInitialized(true);
-      }
-    }
-  }, [i18n, isInitialized]);
-
-  // Detectar el idioma del usuario cuando se carga el componente
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const fetchUserLanguage = async () => {
+    const initializeI18n = async () => {
       try {
+        // Establecer idioma predeterminado si no está definido
+        if (!i18n.language || i18n.language === 'dev') {
+          await i18n.changeLanguage('en');
+          setLanguage('en');
+        }
+
         // Si hay un usuario autenticado, intenta obtener su idioma
         if (session?.user?.id) {
           const response = await fetch('/api/user');
@@ -57,13 +46,16 @@ export default function I18nProvider({
             }
           }
         }
+
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching user language:', error);
+        console.error('Error initializing i18n:', error);
+        setIsLoading(false);
       }
     };
 
-    fetchUserLanguage();
-  }, [session?.user?.id, i18n, isInitialized]);
+    initializeI18n();
+  }, [i18n, session?.user?.id]);
 
   // Función para cambiar el idioma y actualizar la preferencia del usuario
   const changeLanguage = async (lang: string) => {
@@ -97,8 +89,12 @@ export default function I18nProvider({
     }
   };
 
-  if (!isInitialized) {
-    return null; // No renderizar hasta que i18n esté inicializado
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
   }
 
   return (

@@ -1,0 +1,14 @@
+{
+  "noBudgetsTitle": "No Budgets Found",
+  "noBudgetsDescription": "Create your first budget to start managing your finances",
+  "createBudget": "Create Budget",
+  "remaining_budget": "Remaining",
+  "budget_breakdown": "Budget Breakdown",
+  "expenses_by_category": "Expenses by Category",
+  "budgeted": "Budgeted",
+  "spent": "Spent",
+  "no_households": "No Households",
+  "create_household_to_start": "Create a household to get started",
+  "create_household": "Create Household",
+  "selectBudgetToView": "Select a budget to view details"
+} 

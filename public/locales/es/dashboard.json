@@ -1,0 +1,14 @@
+{
+  "noBudgetsTitle": "No hay presupuestos",
+  "noBudgetsDescription": "Crea tu primer presupuesto para comenzar a gestionar tus finanzas",
+  "createBudget": "Crear Presupuesto",
+  "remaining_budget": "Restante",
+  "budget_breakdown": "Desglose del Presupuesto",
+  "expenses_by_category": "Gastos por Categoría",
+  "budgeted": "Presupuestado",
+  "spent": "Gastado",
+  "no_households": "No hay hogares",
+  "create_household_to_start": "Crea un hogar para comenzar",
+  "create_household": "Crear Hogar",
+  "selectBudgetToView": "Selecciona un presupuesto para ver los detalles"
+} 

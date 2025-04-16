@@ -138,9 +138,13 @@ export default function DashboardPage() {
             return b.month - a.month;
           });
           setSelectedBudgetId(sortedBudgets[0].id);
+        } else {
+          // No budgets found, set loading to false
+          setIsLoading(false);
         }
       } catch {
         setError('Failed to load budgets');
+        setIsLoading(false);
       }
     };
 
@@ -221,22 +225,37 @@ export default function DashboardPage() {
   };
 
   if (status === 'loading' || isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-xl">{t('common:loading')}</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+        <div className="flex">
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">{t('common:error')}</h3>
+            <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+              <p>{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!households.length) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
         <PiggyBank className="h-16 w-16 text-gray-400 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">{t('no_households')}</h2>
-        <p className="text-gray-500 mb-4">{t('create_household_to_start')}</p>
+        <h2 className="text-2xl font-bold mb-2">{t('dashboard:no_households')}</h2>
+        <p className="text-gray-500 mb-4">{t('dashboard:create_household_to_start')}</p>
         <Button onClick={() => router.push('/households/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          {t('create_household')}
+          {t('dashboard:create_household')}
         </Button>
       </div>
     );
@@ -264,23 +283,37 @@ export default function DashboardPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select
-            value={selectedBudgetId || ''}
-            onValueChange={(value) => setSelectedBudgetId(value)}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder={t('common:selectBudget')} />
-            </SelectTrigger>
-            <SelectContent>
-              {budgets.map((budget) => (
-                <SelectItem key={budget.id} value={budget.id}>
-                  {budget.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {budgets.length > 0 && (
+            <Select
+              value={selectedBudgetId || ''}
+              onValueChange={(value) => setSelectedBudgetId(value)}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder={t('common:selectBudget')} />
+              </SelectTrigger>
+              <SelectContent>
+                {budgets.map((budget) => (
+                  <SelectItem key={budget.id} value={budget.id}>
+                    {budget.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
+
+      {!currentBudget && budgets.length === 0 && selectedHouseholdId && (
+        <div className="flex flex-col items-center justify-center space-y-4 p-8">
+          <PiggyBank className="h-12 w-12 text-muted-foreground" />
+          <h2 className="text-2xl font-semibold">{t('dashboard:noBudgetsTitle')}</h2>
+          <p className="text-muted-foreground text-center">{t('dashboard:noBudgetsDescription')}</p>
+          <Button onClick={() => router.push(`/budgets/create?householdId=${selectedHouseholdId}`)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('dashboard:createBudget')}
+          </Button>
+        </div>
+      )}
 
       {currentBudget && stats && (
         <>
@@ -307,7 +340,7 @@ export default function DashboardPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>{t('dashboard.remaining_budget')}</CardTitle>
+                <CardTitle>{t('dashboard:remaining_budget')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">
@@ -320,7 +353,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
             <Card className="col-span-2">
               <CardHeader>
-                <CardTitle>{t('dashboard.budget_breakdown')}</CardTitle>
+                <CardTitle>{t('dashboard:budget_breakdown')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -364,7 +397,7 @@ export default function DashboardPage() {
             </Card>
             <Card className="col-span-3">
               <CardHeader>
-                <CardTitle>{t('dashboard.expenses_by_category')}</CardTitle>
+                <CardTitle>{t('dashboard:expenses_by_category')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -381,8 +414,8 @@ export default function DashboardPage() {
                         labelFormatter={(label) => t(`categories:${label}`)}
                       />
                       <Legend />
-                      <Bar dataKey="budgeted" name={t('dashboard.budgeted')} fill="#8884d8" />
-                      <Bar dataKey="spent" name={t('dashboard.spent')} fill="#82ca9d" />
+                      <Bar dataKey="budgeted" name={t('dashboard:budgeted')} fill="#8884d8" />
+                      <Bar dataKey="spent" name={t('dashboard:spent')} fill="#82ca9d" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -415,19 +448,21 @@ export default function DashboardPage() {
         </>
       )}
 
-      {!currentBudget && !error && (
+      {!currentBudget && budgets.length > 0 && (
         <div className="text-center py-10">
-          <p className="text-muted-foreground">{t('budgets:selectBudgetToView')}</p>
+          <p className="text-muted-foreground">{t('dashboard:selectBudgetToView')}</p>
         </div>
       )}
 
-      <Button
-        className="fixed bottom-4 right-4 shadow-lg"
-        onClick={() => router.push(`/expenses/create?budgetId=${selectedBudgetId}`)}
-      >
-        <Plus className="mr-2 h-4 w-4" />
-        {t('expenses:addExpense')}
-      </Button>
+      {selectedHouseholdId && budgets.length > 0 && (
+        <Button
+          className="fixed bottom-4 right-4 shadow-lg"
+          onClick={() => router.push(`/expenses/create?budgetId=${selectedBudgetId}`)}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          {t('expenses:addExpense')}
+        </Button>
+      )}
     </div>
   );
 }

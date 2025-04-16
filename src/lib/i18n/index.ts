@@ -2,47 +2,52 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Importar los recursos de traducción
-import enCommon from './locales/en.json';
-import esCommon from './locales/es.json';
+type Resources = {
+  [key in 'en' | 'es']: {
+    [key in 'common' | 'dashboard' | 'budgets' | 'households' | 'profile' | 'expenses']: Record<string, unknown>;
+  };
+};
 
-const resources = {
+const resources: Resources = {
   en: {
-    translation: enCommon,
-    common: enCommon.common,
-    dashboard: enCommon.dashboard,
-    budgets: enCommon.budgets,
-    households: enCommon.households,
-    profile: enCommon.profile,
-    expenses: {} // Se cargará dinámicamente
+    common: {},
+    dashboard: {},
+    budgets: {},
+    households: {},
+    profile: {},
+    expenses: {}
   },
   es: {
-    translation: esCommon,
-    common: esCommon.common,
-    dashboard: esCommon.dashboard,
-    budgets: esCommon.budgets,
-    households: esCommon.households,
-    profile: esCommon.profile,
-    expenses: {} // Se cargará dinámicamente
+    common: {},
+    dashboard: {},
+    budgets: {},
+    households: {},
+    profile: {},
+    expenses: {}
   }
 };
 
 // Cargar traducciones de archivos JSON
-try {
-  fetch('/locales/en/expenses.json')
-    .then(response => response.json())
-    .then(data => {
-      resources.en.expenses = data;
-    });
-    
-  fetch('/locales/es/expenses.json')
-    .then(response => response.json())
-    .then(data => {
-      resources.es.expenses = data;
-    });
-} catch (error) {
-  console.error('Error cargando traducciones:', error);
-}
+const loadTranslations = async () => {
+  try {
+    const translationModules = ['common', 'dashboard', 'budgets', 'households', 'profile', 'expenses'] as const;
+    const languages = ['en', 'es'] as const;
+
+    for (const lang of languages) {
+      for (const translationModule of translationModules) {
+        const response = await fetch(`/locales/${lang}/${translationModule}.json`);
+        if (response.ok) {
+          const data = await response.json();
+          resources[lang][translationModule] = data;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading translations:', error);
+  }
+};
+
+loadTranslations();
 
 // Inicializar i18n
 i18n
@@ -55,8 +60,8 @@ i18n
     
     // Para permitir acceso tanto a través de namespaces como directamente
     // Esto permite que t('common.dashboard') funcione y también profile.title
-    ns: ['translation', 'common', 'dashboard', 'budgets', 'households', 'profile', 'expenses'],
-    defaultNS: 'translation',
+    ns: ['common', 'dashboard', 'budgets', 'households', 'profile', 'expenses'],
+    defaultNS: 'common',
     
     interpolation: {
       escapeValue: false, // React ya escapa los valores
